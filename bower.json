@@ -1,0 +1,27 @@
+{
+  "name": "Wrapp Demo",
+  "version": "0.2.0",
+  "authors": [
+    "Elliot Fleming <elliotfleming@gmail.com>"
+  ],
+  "description": "A Wrapp programming challenge",
+  "license": "MIT",
+  "homepage": "wrapp.elliotfleming.com",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "backbone": "latest",
+    "bootstrap": "latest",
+    "font-awesome": "latest",
+    "jquery": "latest",
+    "requirejs": "latest",
+    "underscore": "latest"
+  },
+  "devDependencies": {}
+}
