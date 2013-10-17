@@ -19,22 +19,70 @@
     </head>
     <body>
 
-        <div class="container">
+        <div class="container-main">
 
-            <h1>Wrapp Demo</h1>
+            <div id="fb-root"></div>
 
-            <a href="http://wrapp.elliotfleming.com">Wrapp Demo</a>
+            <div id="content" class="container">
 
-        </div> <!--End .container-->
+                <header>
+
+                    <div id="nav">
+                        <nav class="navbar navbar-default" role="navigation">
+                            
+                            <div class="navbar-header">
+                                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse-target">
+                                    <span class="sr-only">Toggle navigation</span>
+                                    <span class="icon-bar"></span>
+                                    <span class="icon-bar"></span>
+                                    <span class="icon-bar"></span>
+                                </button>
+                                <a class="navbar-brand">
+                                    <img src="/images/wrapp-icon.png" height="40">
+                                    Wrapp Demo
+                                </a>
+                            </div>
+                            
+                            <div class="collapse navbar-collapse navbar-collapse-target">
+                                
+                                <div class="auth pull-right">
+                                    <a href="#" class="facebook-auth-button btn btn-primary navbar-btn"><i class="icon-facebook-sign"></i> Sign In with Facebook</a>
+                                </div>
+
+                            </div>
+
+                        </nav> <!--End .navbar-->
+                    </div> <!--End #nav-->
+
+                </header>
+
+                <div class="friends-container row">
+
+                    <div class="friends-list list-group col-md-6">
+                        
+                        
+
+                    </div>
+
+                </div> <!--End .friends-container-->
+
+            </div> <!--End #content.container-->
+
+        </div> <!--End .container-main-->
+
+        <script type="text/template" id="friend-template">
+            <img class="img-rounded" src="<%= picture.data.url %>" width="50" height="50" alt="Profile Picture">
+            <%= name %>
+        </script>
 
         <script src="bower_components/jquery/jquery.min.js"></script>
         <script src="bower_components/underscore/underscore-min.js"></script>
         <script src="bower_components/backbone/backbone-min.js"></script>
-        <!--<script src="js/models/todo.js"></script>
-        <script src="js/collections/todos.js"></script>
-        <script src="js/views/todo-view.js"></script>
+        <script src="js/models/friend.js"></script>
+        <script src="js/collections/friends.js"></script>
+        <script src="js/views/friend-view.js"></script>
         <script src="js/views/app-view.js"></script>
-        <script src="js/routers/router.js"></script>-->
+        <script src="js/routers/router.js"></script>
         <script src="js/app.js"></script>
 
     </body>

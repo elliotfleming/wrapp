@@ -1,2 +1,89 @@
 /* styles/main.css */
 
+@media (min-width: 992px) {
+    .container {
+        max-width: 800px;
+    }
+}
+
+.container-main {
+    margin: 20px auto 50px;
+}
+
+.navbar-brand {
+    margin: 0;
+    padding: 0 20px;
+    line-height: 50px;
+}
+
+.facebook-auth-button i {
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.filters {
+    margin-bottom: 20px
+}
+
+.list-group-item {
+    padding: 2px;
+    font-size: 1.25em;
+}
+
+.list-group-item span {
+    display: inline-block;
+    margin: 0 5px;
+    font-size: 2em;
+    vertical-align: baseline;
+    color: #AAA;
+}
+
+.list-navigation-container {
+    margin: 20px auto;
+}
+
+.list-navigation-container span {
+    vertical-align: middle;
+    font-size: 3em;
+}
+
+.list-navigation-button {
+    display: inline-block;
+    margin: 0 20px;
+    vertical-align: middle;
+    font-size: 5em;
+    cursor: pointer;
+}
+
+.list-navigation-button:hover,
+.list-navigation-button:focus,
+.list-navigation-button:active {
+    text-decoration: none;
+}
+
+.list-navigation-button.disabled,
+.list-navigation-button[disabled] {
+    pointer-events: none;
+    cursor: not-allowed;
+    opacity: 0.65;
+    filter: alpha(opacity=65);
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+.filter-tools > .btn + .btn,
+.filter-tools > .btn-group + .btn,
+.filter-tools > .btn + .btn-group,
+.filter-tools > .btn-group + .btn-group {
+    margin-left: 10px;
+}
+
+@media (max-width: 768px) {
+    .list-navigation-container {
+        margin: 0 auto;
+    }
+    .list-navigation-container span {
+        font-size: 1.5em;
+    }
+}

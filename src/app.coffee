@@ -1,18 +1,33 @@
 # app.coffee
 
-logToConsole = ( msg ) ->
-  console.log 'Triggered ' + msg
-  console.log this
-  return
+window.app = window.app || {}
+window.app.facebook = _.extend {}, Backbone.Events
 
-object = {}
+new window.app.AppView()
 
-_.extend object, Backbone.Events
+# Facebook Initialization
+window.fbAsyncInit = ->
 
-object.on 'console:log', logToConsole
+    window.FB.init
+        appId      : '634167176604683'
+        channelUrl : '//' + window.location.hostname + '/channel.html'
+        cookie     : true
 
-object.trigger 'console:log', 'a log event'
+    window.FB.Event.subscribe 'auth.authResponseChange', (response) ->
+        window.app.facebook.trigger 'facebookStatusChange', response
+        console.info '___FACEBOOK AUTH___'
+        console.log response
+        return
 
-object.off()
-
-object.trigger 'console:log', 'a log event'
+# the Facebook JavaScript SDK
+((d) ->
+    id  = 'facebook-jssdk'
+    ref = d.getElementsByTagName('script')[0]
+    return if d.getElementById id
+    js       = d.createElement('script')
+    js.id    = id
+    js.async = true
+    js.src   = "//connect.facebook.net/en_US/all.js"
+    ref.parentNode.insertBefore js, ref
+    return
+) document
