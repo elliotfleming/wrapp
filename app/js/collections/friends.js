@@ -5,8 +5,27 @@
   window.app.Friends = Backbone.Collection.extend({
     model: window.app.Friend,
     url: '/me?fields=picture,friends.fields(id,name,gender,devices,picture)',
-    comparator: function(friend) {
-      return friend.get('name');
+    sortAttribute: 'name',
+    sortDirection: 1,
+    comparator: function(a, b) {
+      a = a.get(this.sortAttribute);
+      b = b.get(this.sortAttribute);
+      if (a === b) {
+        return 0;
+      }
+      if (this.sortDirection === 1) {
+        if (a > b) {
+          return 1;
+        } else {
+          return -1;
+        }
+      } else {
+        if (a < b) {
+          return 1;
+        } else {
+          return -1;
+        }
+      }
     },
     sync: function(method, model, options) {
       return window.FB.api(model.url, function(response) {
@@ -19,6 +38,10 @@
         options.success(response.friends.data, response, options);
       });
     },
+    sortFriends: function(attribute) {
+      this.sortAttribute = attribute;
+      return this.sort();
+    },
     search: function(searchText) {
       var filtered, pattern;
       pattern = new RegExp(searchText, 'i');
@@ -30,33 +53,5 @@
   });
 
   window.app.friends = new window.app.Friends();
-
-  window.app.page = {
-    page_defaults: {
-      page: 1,
-      currentPage: 1,
-      perPage: 10
-    },
-    reset: function() {
-      return this.info.currentPage = 1;
-    },
-    updatePageInfo: function(collection) {
-      var currentPage, finish, start, totalFriends, totalPages;
-      totalFriends = collection.models.length;
-      totalPages = Math.ceil(totalFriends / this.page_defaults.perPage);
-      currentPage = this.info != null ? this.info.currentPage : this.page_defaults.currentPage;
-      start = currentPage * 10 !== 10 ? (currentPage - 1) * 10 : 0;
-      finish = currentPage * 10;
-      return this.info = {
-        totalFriends: totalFriends,
-        totalPages: totalPages,
-        currentPage: currentPage,
-        start: start,
-        finish: finish
-      };
-    }
-  };
-
-  window.app.page = _.extend(window.app.page, Backbone.Events);
 
 }).call(this);

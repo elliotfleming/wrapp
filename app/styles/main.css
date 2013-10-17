@@ -1,10 +1,5 @@
 /* styles/main.css */
 
-@media (min-width: 992px) {
-    .container {
-        max-width: 800px;
-    }
-}
 
 .container-main {
     margin: 20px auto 50px;
@@ -35,6 +30,7 @@
 }
 
 .filters {
+    display: none;
     margin-bottom: 20px
 }
 
@@ -54,6 +50,11 @@
     vertical-align: middle;
     font-size: 5em;
     cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .pagination-button:hover,
@@ -86,5 +87,11 @@
     }
     .pagination-container span {
         font-size: 1.5em;
+    }
+}
+
+@media (min-width: 992px) {
+    .container {
+        max-width: 800px;
     }
 }

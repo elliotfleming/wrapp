@@ -10,6 +10,8 @@ window.app.AppView = Backbone.View.extend
         'click .facebook-auth-button': 'auth'
         'click #pagination-back-button': 'pageBack'
         'click #pagination-forward-button': 'pageForward'
+        'click #alpha-sort-az': 'sortAZ'
+        'click #alpha-sort-za': 'sortZA'
         'keyup #search-friends': 'searchFriends'
 
     initialize: ->
@@ -23,6 +25,8 @@ window.app.AppView = Backbone.View.extend
         @$paginationInfo      = $ '.pagination-info'
         @$paginationBack      = $ '#pagination-back-button'
         @$paginationForward   = $ '#pagination-forward-button'
+        @$sortAZ              = $ '#alpha-sort-az'
+        @$sortZA              = $ '#alpha-sort-za'
 
         @listenTo window.app.facebook, 'facebookStatusChange', @updateAuth
         @listenTo window.app.facebook, 'isLoggedIn',           @getData
@@ -42,19 +46,23 @@ window.app.AppView = Backbone.View.extend
 
     resetFriendList: ->
 
+        @$filterContainer.show()
+
         if window.app.filteredCollection? and window.app.filteredCollection.models.length isnt window.app.friends.models.length
-            console.log window.app.filteredCollection
             window.app.page.updatePageInfo window.app.filteredCollection
             collection = window.app.filteredCollection
         else
             window.app.page.updatePageInfo window.app.friends
             collection = window.app.friends
+
+        collection.sortDirection = window.app.page.sorting.sortDirection
+        collection.sortFriends window.app.page.sorting.sortAttribute
         
         paginated = collection.slice window.app.page.info.start, window.app.page.info.finish
         
         @$paginationInfo.html window.app.page.info.currentPage + ' / ' + window.app.page.info.totalPages
 
-        if window.app.page.info.currentPage is 1
+        if window.app.page.info.currentPage < 2
             @$paginationBack.addClass 'disabled'
         else if @$paginationBack.hasClass 'disabled'
             @$paginationBack.removeClass 'disabled'
@@ -65,7 +73,12 @@ window.app.AppView = Backbone.View.extend
             @$paginationForward.removeClass 'disabled'
 
         @$friendList.empty()
-        _.each paginated, @showFriend, @
+
+        if paginated.length
+            _.each paginated, @showFriend, @
+        else
+            $('<a/>', {class: 'list-group-item text-center', html: '<span><i class="icon-frown"></i> No Matches</span>'}).appendTo @$friendList
+
         return
 
     getData: ( callback ) ->
@@ -85,21 +98,46 @@ window.app.AppView = Backbone.View.extend
         e.preventDefault() if e.which == 13
         searchText = @$search.val()
         window.app.filteredCollection = window.app.friends.search searchText
-        window.app.page.trigger 'pageUpdate', window.app.filteredCollection
         window.app.page.reset()
+        window.app.page.trigger 'pageUpdate', window.app.filteredCollection
         return
+
+    sortAZ: ( e ) ->
+
+        e.preventDefault()
+        return if @$sortAZ.hasClass 'active'
+        window.app.page.sorting.sortDirection = 1
+        @$sortZA.removeClass 'active'
+        @$sortAZ.addClass 'active'
+        window.app.page.reset()
+        window.app.page.trigger 'pageUpdate'
+        return
+
+    sortZA: ( e ) ->
+
+        e.preventDefault()
+        return if @$sortZA.hasClass 'active'
+        window.app.page.sorting.sortDirection = -1
+        @$sortAZ.removeClass 'active'
+        @$sortZA.addClass 'active'
+        window.app.page.reset()
+        window.app.page.trigger 'pageUpdate'
+        return
+
 
     pageBack: ( e ) ->
 
         e.preventDefault()
         window.app.page.info.currentPage--
         window.app.page.trigger 'pageUpdate'
+        return
 
     pageForward: ( e ) ->
 
         e.preventDefault()
         window.app.page.info.currentPage++
         window.app.page.trigger 'pageUpdate'
+        return
 
     updateAuth: ( response ) ->
 

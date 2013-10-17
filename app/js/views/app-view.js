@@ -8,6 +8,8 @@
       'click .facebook-auth-button': 'auth',
       'click #pagination-back-button': 'pageBack',
       'click #pagination-forward-button': 'pageForward',
+      'click #alpha-sort-az': 'sortAZ',
+      'click #alpha-sort-za': 'sortZA',
       'keyup #search-friends': 'searchFriends'
     },
     initialize: function() {
@@ -20,6 +22,8 @@
       this.$paginationInfo = $('.pagination-info');
       this.$paginationBack = $('#pagination-back-button');
       this.$paginationForward = $('#pagination-forward-button');
+      this.$sortAZ = $('#alpha-sort-az');
+      this.$sortZA = $('#alpha-sort-za');
       this.listenTo(window.app.facebook, 'facebookStatusChange', this.updateAuth);
       this.listenTo(window.app.facebook, 'isLoggedIn', this.getData);
       this.listenTo(window.app.friends, 'reset', this.resetFriendList);
@@ -36,17 +40,19 @@
     },
     resetFriendList: function() {
       var collection, paginated;
+      this.$filterContainer.show();
       if ((window.app.filteredCollection != null) && window.app.filteredCollection.models.length !== window.app.friends.models.length) {
-        console.log(window.app.filteredCollection);
         window.app.page.updatePageInfo(window.app.filteredCollection);
         collection = window.app.filteredCollection;
       } else {
         window.app.page.updatePageInfo(window.app.friends);
         collection = window.app.friends;
       }
+      collection.sortDirection = window.app.page.sorting.sortDirection;
+      collection.sortFriends(window.app.page.sorting.sortAttribute);
       paginated = collection.slice(window.app.page.info.start, window.app.page.info.finish);
       this.$paginationInfo.html(window.app.page.info.currentPage + ' / ' + window.app.page.info.totalPages);
-      if (window.app.page.info.currentPage === 1) {
+      if (window.app.page.info.currentPage < 2) {
         this.$paginationBack.addClass('disabled');
       } else if (this.$paginationBack.hasClass('disabled')) {
         this.$paginationBack.removeClass('disabled');
@@ -57,7 +63,14 @@
         this.$paginationForward.removeClass('disabled');
       }
       this.$friendList.empty();
-      _.each(paginated, this.showFriend, this);
+      if (paginated.length) {
+        _.each(paginated, this.showFriend, this);
+      } else {
+        $('<a/>', {
+          "class": 'list-group-item text-center',
+          html: '<span><i class="icon-frown"></i> No Matches</span>'
+        }).appendTo(this.$friendList);
+      }
     },
     getData: function(callback) {
       if (!$.trim(this.$friendList.html())) {
@@ -77,18 +90,40 @@
       }
       searchText = this.$search.val();
       window.app.filteredCollection = window.app.friends.search(searchText);
-      window.app.page.trigger('pageUpdate', window.app.filteredCollection);
       window.app.page.reset();
+      window.app.page.trigger('pageUpdate', window.app.filteredCollection);
+    },
+    sortAZ: function(e) {
+      e.preventDefault();
+      if (this.$sortAZ.hasClass('active')) {
+        return;
+      }
+      window.app.page.sorting.sortDirection = 1;
+      this.$sortZA.removeClass('active');
+      this.$sortAZ.addClass('active');
+      window.app.page.reset();
+      window.app.page.trigger('pageUpdate');
+    },
+    sortZA: function(e) {
+      e.preventDefault();
+      if (this.$sortZA.hasClass('active')) {
+        return;
+      }
+      window.app.page.sorting.sortDirection = -1;
+      this.$sortAZ.removeClass('active');
+      this.$sortZA.addClass('active');
+      window.app.page.reset();
+      window.app.page.trigger('pageUpdate');
     },
     pageBack: function(e) {
       e.preventDefault();
       window.app.page.info.currentPage--;
-      return window.app.page.trigger('pageUpdate');
+      window.app.page.trigger('pageUpdate');
     },
     pageForward: function(e) {
       e.preventDefault();
       window.app.page.info.currentPage++;
-      return window.app.page.trigger('pageUpdate');
+      window.app.page.trigger('pageUpdate');
     },
     updateAuth: function(response) {
       if (response.status === 'connected') {

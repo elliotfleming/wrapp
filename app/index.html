@@ -63,10 +63,17 @@
                         <input type="search" id="search-friends" class="form-control input-lg" placeholder="Search Friends">
 
                         <div class="pagination-container">
-                            <a id="pagination-back-button" class="pagination-button"><i class="icon-chevron-sign-left"></i></a>
+                            <a id="pagination-back-button" class="pagination-button disabled"><i class="icon-chevron-sign-left"></i></a>
                             <span id="pagination-info" class="pagination-info">0 / 0</span>
-                            <a id="pagination-forward-button" class="pagination-button"><i class="icon-chevron-sign-right"></i></a>
+                            <a id="pagination-forward-button" class="pagination-button disabled"><i class="icon-chevron-sign-right"></i></a>
                         </div>
+
+                        <div class="filter-tools text-center">
+                            <div class="btn-group btn-group-lg">
+                                <button type="button" id="alpha-sort-az" class="btn btn-default active"><i class="icon-sort-by-alphabet"></i></button>
+                                <button type="button" id="alpha-sort-za" class="btn btn-default"><i class="icon-sort-by-alphabet-alt"></i></button>
+                            </div>
+                        </div> <!--End .filter-tools-->
 
                     </div> <!--End .filters-->
 
@@ -89,6 +96,7 @@
         <script src="js/facebook.js"></script>
         <script src="js/models/friend.js"></script>
         <script src="js/collections/friends.js"></script>
+        <script src="js/utils/page.js"></script>
         <script src="js/views/friend-view.js"></script>
         <script src="js/views/app-view.js"></script>
         <script src="js/routers/router.js"></script>
