@@ -10,45 +10,59 @@
     initialize: function() {
       this.$authContainer = $('.auth');
       this.$authButton = $('.facebook-auth-button');
+      this.$friendList = $('.friends-list');
       this.listenTo(window.app.facebook, 'facebookStatusChange', this.updateAuth);
-      this.listenTo(window.app.friends, 'add', this.addOne);
-      return this.listenTo(window.app.friends, 'reset', this.addAll);
+      this.listenTo(window.app.friends, 'add', this.showFriend);
+      return this.listenTo(window.app.friends, 'reset', this.resetFriendList);
     },
     render: function() {},
-    addOne: function(friend) {
+    showFriend: function(friend) {
       var view;
       view = new window.app.FriendView({
         model: friend
       });
-      $('.friends-list').append(view.render().el);
+      this.$friendList.append(view.render().el);
     },
-    addAll: function() {
+    resetFriendList: function() {
       var paginated;
-      console.log('addAll()');
-      this.$('.friend-list').empty();
-      paginated = window.app.friends.slice(0, 10);
-      console.log(paginated);
-      _.each(paginated, this.addOne, this);
+      this.$friendList.empty();
+      window.app.friends.updatePageInfo();
+      paginated = window.app.friends.slice(window.app.friends.page.start, window.app.friends.page.finish);
+      _.each(paginated, this.showFriend, this);
     },
     getData: function(callback) {
       var query;
       query = '/me?fields=picture,friends.limit(10).fields(id,name,gender,devices,picture)';
       window.FB.api(query, function(response) {
+        console.log('___FACEBOOK GRAPH DATA___');
         console.log(response);
         window.app.friends.reset(response.friends.data);
       });
     },
     updateAuth: function(response) {
       if (response.status === 'connected') {
-        $('.facebook-auth-button').html('<i class="icon-signout"></i> Logout');
-        this.getData();
+        this.$authButton.html('<i class="icon-signout"></i> Logout');
+        window.app.facebook.isLoggedIn = true;
+        if (!$.trim(this.$friendList.html())) {
+          this.getData();
+        }
       } else {
-        $('.facebook-auth-button').html('<i class="icon-facebook-sign"></i> Sign In with Facebook');
+        this.$authButton.html('<i class="icon-facebook-sign"></i> Sign In with Facebook');
+        window.app.facebook.isLoggedIn = false;
       }
     },
     auth: function(e) {
       e.preventDefault();
       console.log('auth()');
+      if (window.app.facebook.isLoggedIn === true) {
+        console.log('Log Out');
+        window.FB.logout();
+      } else {
+        console.log('Log In');
+        window.FB.login(null, {
+          scope: 'friends_photos, user_friends, user_photos'
+        });
+      }
     }
   });
 
