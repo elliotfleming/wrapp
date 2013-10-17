@@ -6,6 +6,19 @@ Friends = Backbone.Collection.extend
     
     model: window.app.Friend
 
+    url: '/me?fields=picture,friends.limit(10).fields(id,name,gender,devices,picture)'
+
+    sync: ( method, model, options) ->
+        
+        window.FB.api model.url, ( response ) ->
+            if not response or response.error
+                options.error response
+                return
+            console.log '___FACEBOOK GRAPH DATA___'
+            console.log response
+            options.success response.friends.data, response, options
+            return
+
     comparator: ( friend ) ->
         return friend.get 'name'
 

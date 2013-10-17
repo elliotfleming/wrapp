@@ -6,6 +6,18 @@
 
   Friends = Backbone.Collection.extend({
     model: window.app.Friend,
+    url: '/me?fields=picture,friends.limit(10).fields(id,name,gender,devices,picture)',
+    sync: function(method, model, options) {
+      return window.FB.api(model.url, function(response) {
+        if (!response || response.error) {
+          options.error(response);
+          return;
+        }
+        console.log('___FACEBOOK GRAPH DATA___');
+        console.log(response);
+        options.success(response.friends.data, response, options);
+      });
+    },
     comparator: function(friend) {
       return friend.get('name');
     },

@@ -15,7 +15,8 @@ window.app.AppView = Backbone.View.extend
         @$friendList    = $ '.friends-list'
 
         @listenTo window.app.facebook, 'facebookStatusChange', @updateAuth
-        @listenTo window.app.friends, 'add', @showFriend
+        @listenTo window.app.facebook, 'isLoggedIn', @getData
+        #@listenTo window.app.friends, 'add', @showFriend
         @listenTo window.app.friends, 'reset', @resetFriendList
     
     render: ->
@@ -35,20 +36,21 @@ window.app.AppView = Backbone.View.extend
         return
 
     getData: ( callback ) ->
-        query = '/me?fields=picture,friends.limit(10).fields(id,name,gender,devices,picture)'
-        window.FB.api(query, (response) ->
-            console.log '___FACEBOOK GRAPH DATA___'
-            console.log response
-            window.app.friends.reset response.friends.data
-            return
-        )
+        if !$.trim @$friendList.html()
+            window.app.friends.fetch
+                success: ( collection, response, options ) ->
+                    console.log '___FACEBOOK FRIENDS LIST___'
+                    console.log response
+                error: ( response ) ->
+                    console.log 'Facebook query error'
+                reset: true
         return
 
     updateAuth: ( response ) ->
         if response.status is 'connected'
             @$authButton.html '<i class="icon-signout"></i> Logout'
             window.app.facebook.isLoggedIn = true
-            @getData() if !$.trim @$friendList.html()
+            window.app.facebook.trigger 'isLoggedIn'
         else 
             @$authButton.html '<i class="icon-facebook-sign"></i> Sign In with Facebook'
             window.app.facebook.isLoggedIn = false

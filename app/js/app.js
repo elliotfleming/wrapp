@@ -2,35 +2,6 @@
 (function() {
   window.app = window.app || {};
 
-  window.app.facebook = _.extend({}, Backbone.Events);
-
   new window.app.AppView();
-
-  window.fbAsyncInit = function() {
-    window.FB.init({
-      appId: '634167176604683',
-      channelUrl: '//' + window.location.hostname + '/channel.html',
-      cookie: true
-    });
-    return window.FB.Event.subscribe('auth.authResponseChange', function(response) {
-      window.app.facebook.trigger('facebookStatusChange', response);
-      console.info('___FACEBOOK AUTH___');
-      console.log(response);
-    });
-  };
-
-  (function(d) {
-    var id, js, ref;
-    id = 'facebook-jssdk';
-    ref = d.getElementsByTagName('script')[0];
-    if (d.getElementById(id)) {
-      return;
-    }
-    js = d.createElement('script');
-    js.id = id;
-    js.async = true;
-    js.src = "//connect.facebook.net/en_US/all.js";
-    ref.parentNode.insertBefore(js, ref);
-  })(document);
 
 }).call(this);

@@ -12,7 +12,7 @@
       this.$authButton = $('.facebook-auth-button');
       this.$friendList = $('.friends-list');
       this.listenTo(window.app.facebook, 'facebookStatusChange', this.updateAuth);
-      this.listenTo(window.app.friends, 'add', this.showFriend);
+      this.listenTo(window.app.facebook, 'isLoggedIn', this.getData);
       return this.listenTo(window.app.friends, 'reset', this.resetFriendList);
     },
     render: function() {},
@@ -31,21 +31,24 @@
       _.each(paginated, this.showFriend, this);
     },
     getData: function(callback) {
-      var query;
-      query = '/me?fields=picture,friends.limit(10).fields(id,name,gender,devices,picture)';
-      window.FB.api(query, function(response) {
-        console.log('___FACEBOOK GRAPH DATA___');
-        console.log(response);
-        window.app.friends.reset(response.friends.data);
-      });
+      if (!$.trim(this.$friendList.html())) {
+        window.app.friends.fetch({
+          success: function(collection, response, options) {
+            console.log('___FACEBOOK FRIENDS LIST___');
+            return console.log(response);
+          },
+          error: function(response) {
+            return console.log('Facebook query error');
+          },
+          reset: true
+        });
+      }
     },
     updateAuth: function(response) {
       if (response.status === 'connected') {
         this.$authButton.html('<i class="icon-signout"></i> Logout');
         window.app.facebook.isLoggedIn = true;
-        if (!$.trim(this.$friendList.html())) {
-          this.getData();
-        }
+        window.app.facebook.trigger('isLoggedIn');
       } else {
         this.$authButton.html('<i class="icon-facebook-sign"></i> Sign In with Facebook');
         window.app.facebook.isLoggedIn = false;
