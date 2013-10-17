@@ -2,11 +2,14 @@
 
 window.app = window.app || {}
 
-Friends = Backbone.Collection.extend
+window.app.Friends = Backbone.Collection.extend
     
     model: window.app.Friend
 
-    url: '/me?fields=picture,friends.limit(10).fields(id,name,gender,devices,picture)'
+    url: '/me?fields=picture,friends.fields(id,name,gender,devices,picture)'
+
+    comparator: ( friend ) ->
+        return friend.get 'name'
 
     sync: ( method, model, options) ->
         
@@ -19,27 +22,38 @@ Friends = Backbone.Collection.extend
             options.success response.friends.data, response, options
             return
 
-    comparator: ( friend ) ->
-        return friend.get 'name'
+    search: ( searchText ) ->
 
-    pagination_defaults:
+        pattern = new RegExp( searchText, 'i' )
+        filtered = @filter ( friend ) ->
+            pattern.test friend.get('name')
+        new window.app.Friends filtered
+
+window.app.friends = new window.app.Friends()
+
+window.app.page = 
+
+    page_defaults:
         page: 1
         currentPage: 1
         perPage: 10
 
-    updatePageInfo: ->
-        numberOfFriends = @models.length
-        numberOfPages   = Math.ceil numberOfFriends / @pagination_defaults.perPage
-        start           = if ( @pagination_defaults.page * 10 isnt 10 ) then ( ( @pagination_defaults.page - 1 ) * 10 ) else 0
-        finish          = @pagination_defaults.page * 10
+    reset: ->
+        @info.currentPage = 1
 
-        info =
-            totalFriends: numberOfFriends
-            totalPages: numberOfPages
+    updatePageInfo: ( collection ) ->
+
+        totalFriends = collection.models.length
+        totalPages   = Math.ceil totalFriends / @page_defaults.perPage
+        currentPage  = if @info? then @info.currentPage else @page_defaults.currentPage
+        start        = if currentPage * 10 isnt 10 then ( currentPage - 1 ) * 10 else 0
+        finish       = currentPage * 10
+
+        @info =
+            totalFriends: totalFriends
+            totalPages: totalPages
+            currentPage: currentPage
             start: start
             finish: finish
 
-        @page = info
-        return @page
-
-window.app.friends = new Friends()
+window.app.page = _.extend window.app.page, Backbone.Events

@@ -5,44 +5,90 @@
   window.app.AppView = Backbone.View.extend({
     el: '#content',
     events: {
-      'click .facebook-auth-button': 'auth'
+      'click .facebook-auth-button': 'auth',
+      'click #pagination-back-button': 'pageBack',
+      'click #pagination-forward-button': 'pageForward',
+      'keyup #search-friends': 'searchFriends'
     },
     initialize: function() {
       this.$authContainer = $('.auth');
       this.$authButton = $('.facebook-auth-button');
       this.$friendList = $('.friends-list');
+      this.$filterContainer = $('.filters');
+      this.$search = $('#search-friends');
+      this.$paginationContainer = $('.pagination-container');
+      this.$paginationInfo = $('.pagination-info');
+      this.$paginationBack = $('#pagination-back-button');
+      this.$paginationForward = $('#pagination-forward-button');
       this.listenTo(window.app.facebook, 'facebookStatusChange', this.updateAuth);
       this.listenTo(window.app.facebook, 'isLoggedIn', this.getData);
-      return this.listenTo(window.app.friends, 'reset', this.resetFriendList);
+      this.listenTo(window.app.friends, 'reset', this.resetFriendList);
+      this.listenTo(window.app.page, 'pageUpdate', this.resetFriendList);
+      return this.listenTo(window.app.friends, 'all', this.render);
     },
-    render: function() {},
+    render: function(event) {},
     showFriend: function(friend) {
-      var view;
-      view = new window.app.FriendView({
+      var friendView;
+      friendView = new window.app.FriendView({
         model: friend
       });
-      this.$friendList.append(view.render().el);
+      this.$friendList.append(friendView.render().el);
     },
     resetFriendList: function() {
-      var paginated;
+      var collection, paginated;
+      if ((window.app.filteredCollection != null) && window.app.filteredCollection.models.length !== window.app.friends.models.length) {
+        console.log(window.app.filteredCollection);
+        window.app.page.updatePageInfo(window.app.filteredCollection);
+        collection = window.app.filteredCollection;
+      } else {
+        window.app.page.updatePageInfo(window.app.friends);
+        collection = window.app.friends;
+      }
+      paginated = collection.slice(window.app.page.info.start, window.app.page.info.finish);
+      this.$paginationInfo.html(window.app.page.info.currentPage + ' / ' + window.app.page.info.totalPages);
+      if (window.app.page.info.currentPage === 1) {
+        this.$paginationBack.addClass('disabled');
+      } else if (this.$paginationBack.hasClass('disabled')) {
+        this.$paginationBack.removeClass('disabled');
+      }
+      if (window.app.page.info.currentPage === window.app.page.info.totalPages) {
+        this.$paginationForward.addClass('disabled');
+      } else if (this.$paginationForward.hasClass('disabled')) {
+        this.$paginationForward.removeClass('disabled');
+      }
       this.$friendList.empty();
-      window.app.friends.updatePageInfo();
-      paginated = window.app.friends.slice(window.app.friends.page.start, window.app.friends.page.finish);
       _.each(paginated, this.showFriend, this);
     },
     getData: function(callback) {
       if (!$.trim(this.$friendList.html())) {
         window.app.friends.fetch({
-          success: function(collection, response, options) {
-            console.log('___FACEBOOK FRIENDS LIST___');
-            return console.log(response);
-          },
+          success: function(collection, response, options) {},
           error: function(response) {
             return console.log('Facebook query error');
           },
           reset: true
         });
       }
+    },
+    searchFriends: function(e) {
+      var searchText;
+      if (e.which === 13) {
+        e.preventDefault();
+      }
+      searchText = this.$search.val();
+      window.app.filteredCollection = window.app.friends.search(searchText);
+      window.app.page.trigger('pageUpdate', window.app.filteredCollection);
+      window.app.page.reset();
+    },
+    pageBack: function(e) {
+      e.preventDefault();
+      window.app.page.info.currentPage--;
+      return window.app.page.trigger('pageUpdate');
+    },
+    pageForward: function(e) {
+      e.preventDefault();
+      window.app.page.info.currentPage++;
+      return window.app.page.trigger('pageUpdate');
     },
     updateAuth: function(response) {
       if (response.status === 'connected') {
@@ -56,12 +102,9 @@
     },
     auth: function(e) {
       e.preventDefault();
-      console.log('auth()');
       if (window.app.facebook.isLoggedIn === true) {
-        console.log('Log Out');
         window.FB.logout();
       } else {
-        console.log('Log In');
         window.FB.login(null, {
           scope: 'friends_photos, user_friends, user_photos'
         });

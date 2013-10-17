@@ -12,11 +12,12 @@ window.app.FriendView = Backbone.View.extend
 
     initialize: ->
 
-        this.$friendContainer = $ '.friends-container'
+        @$friendContainer = $ '.friends-container'
         return
     
     render: ->
-        this.$el.html this.template this.model.toJSON()
-        return this
+        
+        @$el.html @template @model.toJSON()
+        return @
 
     

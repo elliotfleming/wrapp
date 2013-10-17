@@ -58,11 +58,19 @@
 
                 <div class="friends-container row">
 
-                    <div class="friends-list list-group col-md-6">
-                        
-                        
+                    <div class="filters col-md-6">
 
-                    </div>
+                        <input type="search" id="search-friends" class="form-control input-lg" placeholder="Search Friends">
+
+                        <div class="pagination-container">
+                            <a id="pagination-back-button" class="pagination-button"><i class="icon-chevron-sign-left"></i></a>
+                            <span id="pagination-info" class="pagination-info">0 / 0</span>
+                            <a id="pagination-forward-button" class="pagination-button"><i class="icon-chevron-sign-right"></i></a>
+                        </div>
+
+                    </div> <!--End .filters-->
+
+                    <div class="friends-list list-group col-md-6"></div>
 
                 </div> <!--End .friends-container-->
 
@@ -73,12 +81,6 @@
         <script type="text/template" id="friend-template">
             <img class="img-rounded" src="<%= picture.data.url %>" width="50" height="50" alt="Profile Picture">
             <%= name %>
-        </script>
-
-        <script type="text/template" id="pagination-template">
-            <a id="pagination-back-button" class="pagination-button"><i class="icon-chevron-sign-left"></i></a>
-            <span id="pagination-info" class="pagination-info"><%= info %></span>
-            <a id="pagination-forward-button" class="pagination-button"><i class="icon-chevron-sign-right"></i></a>
         </script>
 
         <script src="bower_components/jquery/jquery.min.js"></script>
