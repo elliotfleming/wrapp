@@ -35,6 +35,7 @@
         }
         console.log('___FACEBOOK GRAPH DATA___');
         console.log(response);
+        options.facebookResponse = response;
         options.success(response.friends.data, response, options);
       });
     },

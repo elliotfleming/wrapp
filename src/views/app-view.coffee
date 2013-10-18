@@ -86,8 +86,15 @@ window.app.AppView = Backbone.View.extend
     getData: ( callback ) ->
 
         if !$.trim @$friendList.html()
+
+            $loadingContainer = $('<div/>', {class: 'loading-container text-center'}).appendTo '#content'
+            $loadingSpinner = $('<i/>', {class: 'icon-cog icon-spin icon-4x text-primary'}).appendTo $loadingContainer
+                
             window.app.friends.fetch
                 success: ( collection, response, options ) ->
+                    window.app.facebook.graph = options.facebookResponse
+                    if ! $('.user-profile-picture').length
+                        $('<img/>', {class: 'user-profile-picture img-rounded', src: window.app.facebook.graph.picture.data.url, width: '40', height: '40'}).appendTo '.auth'
                     #console.log '___FACEBOOK FRIENDS LIST___'
                     #console.log response
                 error: ( response ) ->
@@ -145,8 +152,6 @@ window.app.AppView = Backbone.View.extend
 
         if response.status is 'connected'
             @$authButton.html '<i class="icon-signout"></i> Logout'
-            $loadingContainer = $('<div/>', {class: 'loading-container text-center'}).appendTo '#content'
-            $loadingSpinner = $('<i/>', {class: 'icon-cog icon-spin icon-4x text-primary'}).appendTo $loadingContainer
             window.app.facebook.isLoggedIn = true
             window.app.facebook.trigger 'isLoggedIn'
         else 
