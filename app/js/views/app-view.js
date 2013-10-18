@@ -5,6 +5,7 @@
   (function(app, friends, page, facebook, FriendView) {
     app.AppView = Backbone.View.extend({
       el: '#content',
+      sortingTemplate: _.template($('#sorting-template').html()),
       events: {
         'click #facebook-auth-button': 'auth',
         'keyup #search-friends': 'searchFriends',
@@ -16,17 +17,12 @@
         this.$authButton = $('#facebook-auth-button');
         this.$friendList = $('#friends-list');
         this.$filters = $('#filters');
+        this.$sorting = $('#sorting');
         this.$search = $('#search-friends');
-        this.$pagination = $('#pagination');
-        this.$paginationInfo = $('#pagination-info');
-        this.$paginationBack = $('#pagination-back-button');
-        this.$paginationForward = $('#pagination-forward-button');
-        this.$sortAZ = $('#alpha-sort-az');
-        this.$sortZA = $('#alpha-sort-za');
         this.listenTo(facebook, 'facebookStatusChange', this.updateAuth);
         this.listenTo(facebook, 'isLoggedIn', this.getData);
         this.listenTo(page, 'pageUpdate', this.render);
-        return this.listenTo(friends, 'reset', this.render);
+        return this.listenTo(friends, 'sync', this.render);
       },
       render: function(collection) {
         var paginated;
@@ -42,7 +38,6 @@
           if ($('.loading-container').length) {
             $('.loading-container').remove();
           }
-          this.$filters.show();
           if (collection) {
             collection = collection;
           }
@@ -55,16 +50,26 @@
           collection.sortDirection = page.sorting.sortDirection;
           collection.sortFriends(page.sorting.sortAttribute);
           paginated = collection.slice(page.info.start, page.info.finish);
-          this.$paginationInfo.html(page.info.currentPage + ' / ' + page.info.totalPages);
+          this.$filters.show();
+          this.$sorting.html(this.sortingTemplate({
+            currentPage: page.info.currentPage,
+            totalPages: page.info.totalPages
+          }));
+          $('.alpha-sort-button').removeClass('active');
+          if (page.sorting.sortDirection === 1) {
+            $('#alpha-sort-az').addClass('active');
+          } else {
+            $('#alpha-sort-za').addClass('active');
+          }
           if (page.info.currentPage < 2) {
-            this.$paginationBack.addClass('disabled');
-          } else if (this.$paginationBack.hasClass('disabled')) {
-            this.$paginationBack.removeClass('disabled');
+            $('#pagination-back-button').addClass('disabled');
+          } else if ($('#pagination-back-button').hasClass('disabled')) {
+            $('#pagination-back-button').removeClass('disabled');
           }
           if (page.info.currentPage === page.info.totalPages) {
-            this.$paginationForward.addClass('disabled');
-          } else if (this.$paginationForward.hasClass('disabled')) {
-            this.$paginationForward.removeClass('disabled');
+            $('#pagination-forward-button').addClass('disabled');
+          } else if ($('#pagination-forward-button').hasClass('disabled')) {
+            $('#pagination-forward-button').removeClass('disabled');
           }
           this.$friendList.empty();
           if (paginated.length) {
@@ -113,8 +118,9 @@
         if (e.which === 13) {
           e.preventDefault();
         }
-        searchText = this.$search.val();
+        searchText = $('#search-friends').val();
         app.filteredCollection = friends.search(searchText);
+        page.searchText = searchText;
         page.reset();
         page.trigger('pageUpdate');
       },
@@ -136,8 +142,6 @@
         if (thisSortButton.hasClass('active')) {
           return;
         }
-        $('.alpha-sort-button').removeClass('active');
-        thisSortButton.addClass('active');
         asc = thisSortButton.is('#alpha-sort-az') ? true : false;
         page.sorting.sortDirection = asc === true ? 1 : -1;
         page.reset();

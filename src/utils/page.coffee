@@ -4,6 +4,8 @@ window.app = window.app || {}
 
 window.app.page =
 
+    searchText: ''
+
     sorting:
         sortAttribute: 'name'
         sortDirection: 1

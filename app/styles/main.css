@@ -74,10 +74,10 @@
     box-shadow: none;
 }
 
-.filter-toolbar > .btn + .btn,
-.filter-toolbar > .btn-group + .btn,
-.filter-toolbar > .btn + .btn-group,
-.filter-toolbar > .btn-group + .btn-group {
+.sorting-toolbar > .btn + .btn,
+.sorting-toolbar > .btn-group + .btn,
+.sorting-toolbar > .btn + .btn-group,
+.sorting-toolbar > .btn-group + .btn-group {
     margin-left: 10px;
 }
 

@@ -8,6 +8,8 @@ window.app = window.app || {}
 
         el: '#content'
 
+        sortingTemplate: _.template $('#sorting-template').html()
+
         events:
             'click #facebook-auth-button' : 'auth'
             'keyup #search-friends'       : 'searchFriends'
@@ -20,18 +22,13 @@ window.app = window.app || {}
             @$authButton        = $ '#facebook-auth-button'
             @$friendList        = $ '#friends-list'
             @$filters           = $ '#filters'
+            @$sorting           = $ '#sorting'
             @$search            = $ '#search-friends'
-            @$pagination        = $ '#pagination'
-            @$paginationInfo    = $ '#pagination-info'
-            @$paginationBack    = $ '#pagination-back-button'
-            @$paginationForward = $ '#pagination-forward-button'
-            @$sortAZ            = $ '#alpha-sort-az'
-            @$sortZA            = $ '#alpha-sort-za'
 
             @listenTo facebook, 'facebookStatusChange', @updateAuth
             @listenTo facebook, 'isLoggedIn',           @getData
             @listenTo page,     'pageUpdate',           @render
-            @listenTo friends,  'reset',                @render
+            @listenTo friends,  'sync',                 @render
 
         render: ( collection ) ->
 
@@ -41,8 +38,6 @@ window.app = window.app || {}
                     $('<img/>', {class: 'user-profile-picture img-rounded', src: facebook.graph.picture.data.url, width: '40', height: '40'}).appendTo @$auth
                 
                 $('.loading-container').remove() if $('.loading-container').length
-
-                @$filters.show()
 
                 if collection
                     collection = collection
@@ -56,16 +51,26 @@ window.app = window.app || {}
                 collection.sortFriends page.sorting.sortAttribute
 
                 paginated = collection.slice page.info.start, page.info.finish
-                @$paginationInfo.html page.info.currentPage + ' / ' + page.info.totalPages
+
+                @$filters.show()
+                @$sorting.html @sortingTemplate
+                    currentPage: page.info.currentPage
+                    totalPages: page.info.totalPages
+
+                $('.alpha-sort-button').removeClass 'active'
+                if page.sorting.sortDirection is 1
+                    $( '#alpha-sort-az' ).addClass 'active'
+                else
+                    $( '#alpha-sort-za' ).addClass 'active'
 
                 if page.info.currentPage < 2
-                    @$paginationBack.addClass 'disabled'
-                else if @$paginationBack.hasClass 'disabled'
-                    @$paginationBack.removeClass 'disabled'
+                    $( '#pagination-back-button' ).addClass 'disabled'
+                else if $( '#pagination-back-button' ).hasClass 'disabled'
+                    $( '#pagination-back-button' ).removeClass 'disabled'
                 if page.info.currentPage is page.info.totalPages
-                    @$paginationForward.addClass 'disabled'
-                else if @$paginationForward.hasClass 'disabled'
-                    @$paginationForward.removeClass 'disabled'
+                     $( '#pagination-forward-button' ).addClass 'disabled'
+                else if  $( '#pagination-forward-button' ).hasClass 'disabled'
+                     $( '#pagination-forward-button' ).removeClass 'disabled'
 
                 @$friendList.empty()
                 if paginated.length
@@ -104,8 +109,9 @@ window.app = window.app || {}
 
             e.preventDefault() if e.which == 13
 
-            searchText = @$search.val()
+            searchText = $('#search-friends').val()
             app.filteredCollection = friends.search searchText
+            page.searchText = searchText
 
             page.reset()
             page.trigger 'pageUpdate'
@@ -130,8 +136,6 @@ window.app = window.app || {}
             thisSortButton = $ e.currentTarget
 
             return if thisSortButton.hasClass 'active'
-            $( '.alpha-sort-button' ).removeClass 'active'
-            thisSortButton.addClass 'active'
 
             asc = if thisSortButton.is '#alpha-sort-az' then true else false
             page.sorting.sortDirection = if asc is true then 1 else -1

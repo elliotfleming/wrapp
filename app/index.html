@@ -58,32 +58,39 @@
 
                 <div class="row">
 
-                    <div id="filters" class="filters-container col-md-6">
+                    <div class="col-md-6">
 
-                        <input type="search" id="search-friends" class="form-control input-lg" placeholder="Search Friends">
+                        <div id="filters" class="filters-container">
+                            
+                            <input type="search" id="search-friends" class="form-control input-lg" placeholder="Search Friends">
 
-                        <div id="pagination" class="pagination-container">
-                            <a id="pagination-back-button" class="pagination-button disabled"><i class="icon-chevron-sign-left"></i></a>
-                            <span id="pagination-info">0 / 0</span>
-                            <a id="pagination-forward-button" class="pagination-button disabled"><i class="icon-chevron-sign-right"></i></a>
-                        </div>
+                            <div id="sorting" class="sorting-container"></div> <!--End #sorting-->
+                            
+                        </div> <!--End #filters-->
 
-                        <div class="filter-toolbar text-center">
-                            <div class="btn-group btn-group-lg">
-                                <button type="button" id="alpha-sort-az" class="alpha-sort-button btn btn-default active"><i class="icon-sort-by-alphabet"></i></button>
-                                <button type="button" id="alpha-sort-za" class="alpha-sort-button btn btn-default"><i class="icon-sort-by-alphabet-alt"></i></button>
-                            </div>
-                        </div> <!--End .filter-tools-->
+                    </div>
 
-                    </div> <!--End .filters-->
-
-                    <div id="friends-list" class="list-group col-md-6"></div>
+                    <div id="friends-list" class="list-group col-md-6"></div> <!--End #firneds-list-->
 
                 </div> <!--End .friends-container-->
 
-            </div> <!--End #content.container-->
+            </div> <!--End .row-->
 
         </div> <!--End .container-main-->
+
+        <script type="text/template" id="sorting-template">
+            <div id="pagination" class="pagination-container">
+                <a id="pagination-back-button" class="pagination-button disabled"><i class="icon-chevron-sign-left"></i></a>
+                <span id="pagination-info"><%= currentPage %> / <%= totalPages %></span>
+                <a id="pagination-forward-button" class="pagination-button disabled"><i class="icon-chevron-sign-right"></i></a>
+            </div>
+            <div class="sorting-toolbar text-center">
+                <div class="btn-group btn-group-lg">
+                    <button type="button" id="alpha-sort-az" class="alpha-sort-button btn btn-default active"><i class="icon-sort-by-alphabet"></i></button>
+                    <button type="button" id="alpha-sort-za" class="alpha-sort-button btn btn-default"><i class="icon-sort-by-alphabet-alt"></i></button>
+                </div>
+            </div>
+        </script>
 
         <script type="text/template" id="friend-template">
             <img class="img-rounded" src="<%= picture.data.url %>" width="50" height="50" alt="Profile Picture">
