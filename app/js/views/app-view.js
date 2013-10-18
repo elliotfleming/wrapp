@@ -42,36 +42,42 @@
     resetFriendList: function() {
       var collection, paginated;
       $('.loading-container').remove();
-      this.$filterContainer.show();
-      if ((window.app.filteredCollection != null) && window.app.filteredCollection.models.length !== window.app.friends.models.length) {
-        window.app.page.updatePageInfo(window.app.filteredCollection);
-        collection = window.app.filteredCollection;
+      if (window.app.friends.models.length) {
+        this.$filterContainer.show();
+        if ((window.app.filteredCollection != null) && window.app.filteredCollection.models.length !== window.app.friends.models.length) {
+          window.app.page.updatePageInfo(window.app.filteredCollection);
+          collection = window.app.filteredCollection;
+        } else {
+          window.app.page.updatePageInfo(window.app.friends);
+          collection = window.app.friends;
+        }
+        collection.sortDirection = window.app.page.sorting.sortDirection;
+        collection.sortFriends(window.app.page.sorting.sortAttribute);
+        paginated = collection.slice(window.app.page.info.start, window.app.page.info.finish);
+        this.$paginationInfo.html(window.app.page.info.currentPage + ' / ' + window.app.page.info.totalPages);
+        if (window.app.page.info.currentPage < 2) {
+          this.$paginationBack.addClass('disabled');
+        } else if (this.$paginationBack.hasClass('disabled')) {
+          this.$paginationBack.removeClass('disabled');
+        }
+        if (window.app.page.info.currentPage === window.app.page.info.totalPages) {
+          this.$paginationForward.addClass('disabled');
+        } else if (this.$paginationForward.hasClass('disabled')) {
+          this.$paginationForward.removeClass('disabled');
+        }
+        this.$friendList.empty();
+        if (paginated.length) {
+          _.each(paginated, this.showFriend, this);
+        } else {
+          $('<a/>', {
+            "class": 'list-group-item text-center',
+            html: '<span><i class="icon-frown"></i> No Matches</span>'
+          }).appendTo(this.$friendList);
+        }
       } else {
-        window.app.page.updatePageInfo(window.app.friends);
-        collection = window.app.friends;
-      }
-      collection.sortDirection = window.app.page.sorting.sortDirection;
-      collection.sortFriends(window.app.page.sorting.sortAttribute);
-      paginated = collection.slice(window.app.page.info.start, window.app.page.info.finish);
-      this.$paginationInfo.html(window.app.page.info.currentPage + ' / ' + window.app.page.info.totalPages);
-      if (window.app.page.info.currentPage < 2) {
-        this.$paginationBack.addClass('disabled');
-      } else if (this.$paginationBack.hasClass('disabled')) {
-        this.$paginationBack.removeClass('disabled');
-      }
-      if (window.app.page.info.currentPage === window.app.page.info.totalPages) {
-        this.$paginationForward.addClass('disabled');
-      } else if (this.$paginationForward.hasClass('disabled')) {
-        this.$paginationForward.removeClass('disabled');
-      }
-      this.$friendList.empty();
-      if (paginated.length) {
-        _.each(paginated, this.showFriend, this);
-      } else {
-        $('<a/>', {
-          "class": 'list-group-item text-center',
-          html: '<span><i class="icon-frown"></i> No Matches</span>'
-        }).appendTo(this.$friendList);
+        $('.user-profile-picture').remove();
+        this.$friendList.empty();
+        this.$filterContainer.hide();
       }
     },
     getData: function(callback) {
@@ -158,6 +164,13 @@
       e.preventDefault();
       if (window.app.facebook.isLoggedIn === true) {
         window.FB.logout();
+        if (window.app.friends) {
+          window.app.friends.reset();
+        }
+        if (window.app.filteredCollection) {
+          window.app.filteredCollection.reset();
+        }
+        window.app.page.trigger('pageUpdate');
       } else {
         window.FB.login(null, {
           scope: 'friends_photos, user_friends, user_photos'

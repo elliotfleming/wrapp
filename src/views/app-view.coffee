@@ -48,38 +48,44 @@ window.app.AppView = Backbone.View.extend
     resetFriendList: ->
 
         $('.loading-container').remove()
-        @$filterContainer.show()
 
-        if window.app.filteredCollection? and window.app.filteredCollection.models.length isnt window.app.friends.models.length
-            window.app.page.updatePageInfo window.app.filteredCollection
-            collection = window.app.filteredCollection
+        if window.app.friends.models.length
+            @$filterContainer.show()
+
+            if window.app.filteredCollection? and window.app.filteredCollection.models.length isnt window.app.friends.models.length
+                window.app.page.updatePageInfo window.app.filteredCollection
+                collection = window.app.filteredCollection
+            else
+                window.app.page.updatePageInfo window.app.friends
+                collection = window.app.friends
+
+            collection.sortDirection = window.app.page.sorting.sortDirection
+            collection.sortFriends window.app.page.sorting.sortAttribute
+            
+            paginated = collection.slice window.app.page.info.start, window.app.page.info.finish
+            
+            @$paginationInfo.html window.app.page.info.currentPage + ' / ' + window.app.page.info.totalPages
+
+            if window.app.page.info.currentPage < 2
+                @$paginationBack.addClass 'disabled'
+            else if @$paginationBack.hasClass 'disabled'
+                @$paginationBack.removeClass 'disabled'
+
+            if window.app.page.info.currentPage is window.app.page.info.totalPages
+                @$paginationForward.addClass 'disabled'
+            else if @$paginationForward.hasClass 'disabled'
+                @$paginationForward.removeClass 'disabled'
+
+            @$friendList.empty()
+
+            if paginated.length
+                _.each paginated, @showFriend, @
+            else
+                $('<a/>', {class: 'list-group-item text-center', html: '<span><i class="icon-frown"></i> No Matches</span>'}).appendTo @$friendList
         else
-            window.app.page.updatePageInfo window.app.friends
-            collection = window.app.friends
-
-        collection.sortDirection = window.app.page.sorting.sortDirection
-        collection.sortFriends window.app.page.sorting.sortAttribute
-        
-        paginated = collection.slice window.app.page.info.start, window.app.page.info.finish
-        
-        @$paginationInfo.html window.app.page.info.currentPage + ' / ' + window.app.page.info.totalPages
-
-        if window.app.page.info.currentPage < 2
-            @$paginationBack.addClass 'disabled'
-        else if @$paginationBack.hasClass 'disabled'
-            @$paginationBack.removeClass 'disabled'
-
-        if window.app.page.info.currentPage is window.app.page.info.totalPages
-            @$paginationForward.addClass 'disabled'
-        else if @$paginationForward.hasClass 'disabled'
-            @$paginationForward.removeClass 'disabled'
-
-        @$friendList.empty()
-
-        if paginated.length
-            _.each paginated, @showFriend, @
-        else
-            $('<a/>', {class: 'list-group-item text-center', html: '<span><i class="icon-frown"></i> No Matches</span>'}).appendTo @$friendList
+            $('.user-profile-picture').remove()
+            @$friendList.empty()
+            @$filterContainer.hide()
 
         return
 
@@ -89,7 +95,7 @@ window.app.AppView = Backbone.View.extend
 
             $loadingContainer = $('<div/>', {class: 'loading-container text-center'}).appendTo '#content'
             $loadingSpinner = $('<i/>', {class: 'icon-cog icon-spin icon-4x text-primary'}).appendTo $loadingContainer
-                
+
             window.app.friends.fetch
                 success: ( collection, response, options ) ->
                     window.app.facebook.graph = options.facebookResponse
@@ -164,6 +170,9 @@ window.app.AppView = Backbone.View.extend
         e.preventDefault()
         if window.app.facebook.isLoggedIn is true
             window.FB.logout()
+            window.app.friends.reset() if window.app.friends
+            window.app.filteredCollection.reset() if window.app.filteredCollection
+            window.app.page.trigger 'pageUpdate'
         else
             window.FB.login null, {scope: 'friends_photos, user_friends, user_photos'}
         return
