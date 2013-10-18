@@ -49,10 +49,10 @@ window.app.AppView = Backbone.View.extend
 
         $('.loading-container').remove()
 
-        if window.app.friends.models.length
+        if window.app.friends? and window.app.friends.length
             @$filterContainer.show()
 
-            if window.app.filteredCollection? and window.app.filteredCollection.models.length isnt window.app.friends.models.length
+            if window.app.filteredCollection? and window.app.filteredCollection.length isnt window.app.friends.length
                 window.app.page.updatePageInfo window.app.filteredCollection
                 collection = window.app.filteredCollection
             else
@@ -99,7 +99,7 @@ window.app.AppView = Backbone.View.extend
             window.app.friends.fetch
                 success: ( collection, response, options ) ->
                     window.app.facebook.graph = options.facebookResponse
-                    if ! $('.user-profile-picture').length
+                    if not $('.user-profile-picture').length
                         $('<img/>', {class: 'user-profile-picture img-rounded', src: window.app.facebook.graph.picture.data.url, width: '40', height: '40'}).appendTo '.auth'
                     #console.log '___FACEBOOK FRIENDS LIST___'
                     #console.log response
@@ -169,10 +169,8 @@ window.app.AppView = Backbone.View.extend
 
         e.preventDefault()
         if window.app.facebook.isLoggedIn is true
-            window.FB.logout()
-            window.app.friends.reset() if window.app.friends
-            window.app.filteredCollection.reset() if window.app.filteredCollection
-            window.app.page.trigger 'pageUpdate'
+            window.FB.logout ( response ) ->
+                window.location.reload(true)
         else
             window.FB.login null, {scope: 'friends_photos, user_friends, user_photos'}
         return

@@ -42,9 +42,9 @@
     resetFriendList: function() {
       var collection, paginated;
       $('.loading-container').remove();
-      if (window.app.friends.models.length) {
+      if ((window.app.friends != null) && window.app.friends.length) {
         this.$filterContainer.show();
-        if ((window.app.filteredCollection != null) && window.app.filteredCollection.models.length !== window.app.friends.models.length) {
+        if ((window.app.filteredCollection != null) && window.app.filteredCollection.length !== window.app.friends.length) {
           window.app.page.updatePageInfo(window.app.filteredCollection);
           collection = window.app.filteredCollection;
         } else {
@@ -163,14 +163,9 @@
     auth: function(e) {
       e.preventDefault();
       if (window.app.facebook.isLoggedIn === true) {
-        window.FB.logout();
-        if (window.app.friends) {
-          window.app.friends.reset();
-        }
-        if (window.app.filteredCollection) {
-          window.app.filteredCollection.reset();
-        }
-        window.app.page.trigger('pageUpdate');
+        window.FB.logout(function(response) {
+          return window.location.reload(true);
+        });
       } else {
         window.FB.login(null, {
           scope: 'friends_photos, user_friends, user_photos'
