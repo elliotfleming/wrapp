@@ -46,7 +46,7 @@
                             <div class="collapse navbar-collapse navbar-collapse-target">
                                 
                                 <div class="auth pull-right">
-                                    <a href="#" class="facebook-auth-button btn btn-primary navbar-btn"><i class="icon-facebook-sign"></i> Sign In with Facebook</a>
+                                    <a href="#" id="facebook-auth-button" class="auth-button btn btn-primary navbar-btn"><i class="icon-facebook-sign"></i> Sign In with Facebook</a>
                                 </div>
 
                             </div>
@@ -56,19 +56,19 @@
 
                 </header>
 
-                <div class="friends-container row">
+                <div class="row">
 
-                    <div class="filters col-md-6">
+                    <div id="filters" class="filters-container col-md-6">
 
                         <input type="search" id="search-friends" class="form-control input-lg" placeholder="Search Friends">
 
-                        <div class="pagination-container">
+                        <div id="pagination" class="pagination-container">
                             <a id="pagination-back-button" class="pagination-button disabled"><i class="icon-chevron-sign-left"></i></a>
-                            <span id="pagination-info" class="pagination-info">0 / 0</span>
+                            <span id="pagination-info">0 / 0</span>
                             <a id="pagination-forward-button" class="pagination-button disabled"><i class="icon-chevron-sign-right"></i></a>
                         </div>
 
-                        <div class="filter-tools text-center">
+                        <div class="filter-toolbar text-center">
                             <div class="btn-group btn-group-lg">
                                 <button type="button" id="alpha-sort-az" class="alpha-sort-button btn btn-default active"><i class="icon-sort-by-alphabet"></i></button>
                                 <button type="button" id="alpha-sort-za" class="alpha-sort-button btn btn-default"><i class="icon-sort-by-alphabet-alt"></i></button>
@@ -77,7 +77,7 @@
 
                     </div> <!--End .filters-->
 
-                    <div class="friends-list list-group col-md-6"></div>
+                    <div id="friends-list" class="list-group col-md-6"></div>
 
                 </div> <!--End .friends-container-->
 

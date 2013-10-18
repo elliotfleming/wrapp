@@ -7,84 +7,80 @@ window.app.AppView = Backbone.View.extend
     el: '#content'
 
     events:
-        'click .facebook-auth-button' : 'auth'
+        'click #facebook-auth-button' : 'auth'
         'keyup #search-friends'       : 'searchFriends'
         'click .pagination-button'    : 'navigate'
         'click .alpha-sort-button'    : 'alphaSort'
 
     initialize: ->
 
-        @$authContainer       = $ '.auth'
-        @$authButton          = $ '.facebook-auth-button'
-        @$friendsContainer    = $ '.friends-container'
-        @$friendList          = $ '.friends-list'
-        @$filterContainer     = $ '.filters'
-        @$search              = $ '#search-friends'
-        @$paginationContainer = $ '.pagination-container'
-        @$paginationInfo      = $ '.pagination-info'
-        @$paginationBack      = $ '#pagination-back-button'
-        @$paginationForward   = $ '#pagination-forward-button'
-        @$sortAZ              = $ '#alpha-sort-az'
-        @$sortZA              = $ '#alpha-sort-za'
+        @$auth              = $ '.auth'
+        @$authButton        = $ '#facebook-auth-button'
+        @$friendList        = $ '#friends-list'
+        @$filters           = $ '#filters'
+        @$search            = $ '#search-friends'
+        @$pagination        = $ '#pagination'
+        @$paginationInfo    = $ '#pagination-info'
+        @$paginationBack    = $ '#pagination-back-button'
+        @$paginationForward = $ '#pagination-forward-button'
+        @$sortAZ            = $ '#alpha-sort-az'
+        @$sortZA            = $ '#alpha-sort-za'
 
         @listenTo window.app.facebook, 'facebookStatusChange', @updateAuth
         @listenTo window.app.facebook, 'isLoggedIn',           @getData
-        @listenTo window.app.friends,  'reset',                @resetFriendList
-        @listenTo window.app.page,     'pageUpdate',           @resetFriendList
-        @listenTo window.app.friends,  'all',                  @render
+        @listenTo window.app.page,     'pageUpdate',           @render
+        @listenTo window.app.friends,  'reset',                @render
 
-    render: ( event ) ->
-        # Nothing here yet
-        return
-    
-    showFriend: ( friend ) ->
-
-        friendView = new window.app.FriendView { model: friend }
-        @$friendList.append friendView.render().el
-        return
-
-    resetFriendList: ->
-
-        $('.loading-container').remove()
+    render: ( collection ) ->
 
         if window.app.friends? and window.app.friends.length
-            @$filterContainer.show()
 
+            if not $('.user-profile-picture').length and window.app.facebook.graph
+                $('<img/>', {class: 'user-profile-picture img-rounded', src: window.app.facebook.graph.picture.data.url, width: '40', height: '40'}).appendTo @$auth
+            
+            $('.loading-container').remove() if $('.loading-container').length
+
+            @$filters.show()
+
+            if collection
+                collection = collection
             if window.app.filteredCollection? and window.app.filteredCollection.length isnt window.app.friends.length
-                window.app.page.updatePageInfo window.app.filteredCollection
                 collection = window.app.filteredCollection
             else
-                window.app.page.updatePageInfo window.app.friends
                 collection = window.app.friends
 
+            window.app.page.updatePageInfo collection
             collection.sortDirection = window.app.page.sorting.sortDirection
             collection.sortFriends window.app.page.sorting.sortAttribute
             
             paginated = collection.slice window.app.page.info.start, window.app.page.info.finish
-            
             @$paginationInfo.html window.app.page.info.currentPage + ' / ' + window.app.page.info.totalPages
 
             if window.app.page.info.currentPage < 2
                 @$paginationBack.addClass 'disabled'
             else if @$paginationBack.hasClass 'disabled'
                 @$paginationBack.removeClass 'disabled'
-
             if window.app.page.info.currentPage is window.app.page.info.totalPages
                 @$paginationForward.addClass 'disabled'
             else if @$paginationForward.hasClass 'disabled'
                 @$paginationForward.removeClass 'disabled'
 
             @$friendList.empty()
-
             if paginated.length
                 _.each paginated, @showFriend, @
             else
                 $('<a/>', {class: 'list-group-item text-center', html: '<span><i class="icon-frown"></i> No Matches</span>'}).appendTo @$friendList
+
         else
             $('.user-profile-picture').remove()
             @$friendList.empty()
-            @$filterContainer.hide()
+            @$filters.hide()
+        return
+    
+    showFriend: ( friend ) ->
 
+        friendView = new window.app.FriendView { model: friend }
+        @$friendList.append friendView.render().el
         return
 
     getData: ( callback ) ->
@@ -97,10 +93,6 @@ window.app.AppView = Backbone.View.extend
             window.app.friends.fetch
                 success: ( collection, response, options ) ->
                     window.app.facebook.graph = options.facebookResponse
-                    if not $('.user-profile-picture').length
-                        $('<img/>', {class: 'user-profile-picture img-rounded', src: window.app.facebook.graph.picture.data.url, width: '40', height: '40'}).appendTo '.auth'
-                    #console.log '___FACEBOOK FRIENDS LIST___'
-                    #console.log response
                 error: ( response ) ->
                     console.log 'Facebook query error'
                 reset: true
@@ -109,23 +101,9 @@ window.app.AppView = Backbone.View.extend
     searchFriends: ( e ) ->
 
         e.preventDefault() if e.which == 13
+
         searchText = @$search.val()
         window.app.filteredCollection = window.app.friends.search searchText
-        window.app.page.reset()
-        window.app.page.trigger 'pageUpdate', window.app.filteredCollection
-        return
-
-    alphaSort: ( e ) ->
-
-        e.preventDefault()
-        thisSortButton = $ e.currentTarget
-
-        return if thisSortButton.hasClass 'active'
-        $( '.alpha-sort-button' ).removeClass 'active'
-        thisSortButton.addClass 'active'
-
-        asc = if thisSortButton.is '#alpha-sort-az' then true else false
-        window.app.page.sorting.sortDirection = if asc is true then 1 else -1
 
         window.app.page.reset()
         window.app.page.trigger 'pageUpdate'
@@ -141,6 +119,22 @@ window.app.AppView = Backbone.View.extend
         else
             window.app.page.info.currentPage++
 
+        window.app.page.trigger 'pageUpdate'
+        return
+
+    alphaSort: ( e ) ->
+
+        e.preventDefault()
+        thisSortButton = $ e.currentTarget
+
+        return if thisSortButton.hasClass 'active'
+        $( '.alpha-sort-button' ).removeClass 'active'
+        thisSortButton.addClass 'active'
+
+        asc = if thisSortButton.is '#alpha-sort-az' then true else false
+        window.app.page.sorting.sortDirection = if asc is true then 1 else -1
+
+        window.app.page.reset()
         window.app.page.trigger 'pageUpdate'
         return
 

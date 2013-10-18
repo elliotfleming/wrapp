@@ -11,7 +11,7 @@
     line-height: 50px;
 }
 
-.facebook-auth-button i {
+.auth-button i {
     display: inline-block;
     margin-right: 5px;
 }
@@ -29,7 +29,7 @@
     color: #AAA;
 }
 
-.filters {
+.filters-container {
     display: none;
     margin-bottom: 20px
 }
@@ -74,10 +74,10 @@
     box-shadow: none;
 }
 
-.filter-tools > .btn + .btn,
-.filter-tools > .btn-group + .btn,
-.filter-tools > .btn + .btn-group,
-.filter-tools > .btn-group + .btn-group {
+.filter-toolbar > .btn + .btn,
+.filter-toolbar > .btn-group + .btn,
+.filter-toolbar > .btn + .btn-group,
+.filter-toolbar > .btn-group + .btn-group {
     margin-left: 10px;
 }
 
