@@ -8,9 +8,6 @@ window.app.Friends = Backbone.Collection.extend
 
     url: '/me?fields=picture,friends.fields(id,name,gender,devices,picture)'
 
-    #comparator: ( friend ) ->
-    #    return friend.get 'name'
-
     sortAttribute: 'name'
     sortDirection: 1
 

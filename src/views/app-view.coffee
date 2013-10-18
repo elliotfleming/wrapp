@@ -2,159 +2,169 @@
 
 window.app = window.app || {}
 
-window.app.AppView = Backbone.View.extend
+( ( app, friends, page, facebook, FriendView ) ->
 
-    el: '#content'
+    app.AppView = Backbone.View.extend
 
-    events:
-        'click #facebook-auth-button' : 'auth'
-        'keyup #search-friends'       : 'searchFriends'
-        'click .pagination-button'    : 'navigate'
-        'click .alpha-sort-button'    : 'alphaSort'
+        el: '#content'
 
-    initialize: ->
+        events:
+            'click #facebook-auth-button' : 'auth'
+            'keyup #search-friends'       : 'searchFriends'
+            'click .pagination-button'    : 'navigate'
+            'click .alpha-sort-button'    : 'alphaSort'
 
-        @$auth              = $ '.auth'
-        @$authButton        = $ '#facebook-auth-button'
-        @$friendList        = $ '#friends-list'
-        @$filters           = $ '#filters'
-        @$search            = $ '#search-friends'
-        @$pagination        = $ '#pagination'
-        @$paginationInfo    = $ '#pagination-info'
-        @$paginationBack    = $ '#pagination-back-button'
-        @$paginationForward = $ '#pagination-forward-button'
-        @$sortAZ            = $ '#alpha-sort-az'
-        @$sortZA            = $ '#alpha-sort-za'
+        initialize: ->
 
-        @listenTo window.app.facebook, 'facebookStatusChange', @updateAuth
-        @listenTo window.app.facebook, 'isLoggedIn',           @getData
-        @listenTo window.app.page,     'pageUpdate',           @render
-        @listenTo window.app.friends,  'reset',                @render
+            @$auth              = $ '.auth'
+            @$authButton        = $ '#facebook-auth-button'
+            @$friendList        = $ '#friends-list'
+            @$filters           = $ '#filters'
+            @$search            = $ '#search-friends'
+            @$pagination        = $ '#pagination'
+            @$paginationInfo    = $ '#pagination-info'
+            @$paginationBack    = $ '#pagination-back-button'
+            @$paginationForward = $ '#pagination-forward-button'
+            @$sortAZ            = $ '#alpha-sort-az'
+            @$sortZA            = $ '#alpha-sort-za'
 
-    render: ( collection ) ->
+            @listenTo facebook, 'facebookStatusChange', @updateAuth
+            @listenTo facebook, 'isLoggedIn',           @getData
+            @listenTo page,     'pageUpdate',           @render
+            @listenTo friends,  'reset',                @render
 
-        if window.app.friends? and window.app.friends.length
+        render: ( collection ) ->
 
-            if not $('.user-profile-picture').length and window.app.facebook.graph
-                $('<img/>', {class: 'user-profile-picture img-rounded', src: window.app.facebook.graph.picture.data.url, width: '40', height: '40'}).appendTo @$auth
-            
-            $('.loading-container').remove() if $('.loading-container').length
+            if friends? and friends.length
 
-            @$filters.show()
+                if not $('.user-profile-picture').length and facebook.graph
+                    $('<img/>', {class: 'user-profile-picture img-rounded', src: facebook.graph.picture.data.url, width: '40', height: '40'}).appendTo @$auth
+                
+                $('.loading-container').remove() if $('.loading-container').length
 
-            if collection
-                collection = collection
-            if window.app.filteredCollection? and window.app.filteredCollection.length isnt window.app.friends.length
-                collection = window.app.filteredCollection
+                @$filters.show()
+
+                if collection
+                    collection = collection
+                if app.filteredCollection? and app.filteredCollection.length isnt friends.length
+                    collection = app.filteredCollection
+                else
+                    collection = friends
+
+                page.updatePageInfo collection
+                collection.sortDirection = page.sorting.sortDirection
+                collection.sortFriends page.sorting.sortAttribute
+
+                paginated = collection.slice page.info.start, page.info.finish
+                @$paginationInfo.html page.info.currentPage + ' / ' + page.info.totalPages
+
+                if page.info.currentPage < 2
+                    @$paginationBack.addClass 'disabled'
+                else if @$paginationBack.hasClass 'disabled'
+                    @$paginationBack.removeClass 'disabled'
+                if page.info.currentPage is page.info.totalPages
+                    @$paginationForward.addClass 'disabled'
+                else if @$paginationForward.hasClass 'disabled'
+                    @$paginationForward.removeClass 'disabled'
+
+                @$friendList.empty()
+                if paginated.length
+                    _.each paginated, @showFriend, @
+                else
+                    $('<a/>', {class: 'list-group-item text-center', html: '<span><i class="icon-frown"></i> No Matches</span>'}).appendTo @$friendList
+
             else
-                collection = window.app.friends
+                $('.user-profile-picture').remove()
+                @$friendList.empty()
+                @$filters.hide()
+            return
+        
+        showFriend: ( friend ) ->
 
-            window.app.page.updatePageInfo collection
-            collection.sortDirection = window.app.page.sorting.sortDirection
-            collection.sortFriends window.app.page.sorting.sortAttribute
-            
-            paginated = collection.slice window.app.page.info.start, window.app.page.info.finish
-            @$paginationInfo.html window.app.page.info.currentPage + ' / ' + window.app.page.info.totalPages
+            friendView = new FriendView { model: friend }
+            @$friendList.append friendView.render().el
+            return
 
-            if window.app.page.info.currentPage < 2
-                @$paginationBack.addClass 'disabled'
-            else if @$paginationBack.hasClass 'disabled'
-                @$paginationBack.removeClass 'disabled'
-            if window.app.page.info.currentPage is window.app.page.info.totalPages
-                @$paginationForward.addClass 'disabled'
-            else if @$paginationForward.hasClass 'disabled'
-                @$paginationForward.removeClass 'disabled'
+        getData: ( callback ) ->
 
-            @$friendList.empty()
-            if paginated.length
-                _.each paginated, @showFriend, @
+            if !$.trim @$friendList.html()
+
+                $loadingContainer = $('<div/>', {class: 'loading-container text-center'}).appendTo '#content'
+                $loadingSpinner = $('<i/>', {class: 'icon-cog icon-spin icon-4x text-primary'}).appendTo $loadingContainer
+
+                friends.fetch
+                    success: ( collection, response, options ) ->
+                        facebook.graph = options.facebookResponse
+                    error: ( response ) ->
+                        console.log 'Facebook query error'
+                    reset: true
+            return
+
+        searchFriends: ( e ) ->
+
+            e.preventDefault() if e.which == 13
+
+            searchText = @$search.val()
+            app.filteredCollection = friends.search searchText
+
+            page.reset()
+            page.trigger 'pageUpdate'
+            return
+
+        navigate: ( e ) ->
+
+            e.preventDefault()
+            thisNavButton = $ e.currentTarget
+
+            if thisNavButton.is '#pagination-back-button'
+                page.info.currentPage--
             else
-                $('<a/>', {class: 'list-group-item text-center', html: '<span><i class="icon-frown"></i> No Matches</span>'}).appendTo @$friendList
+                page.info.currentPage++
 
-        else
-            $('.user-profile-picture').remove()
-            @$friendList.empty()
-            @$filters.hide()
-        return
-    
-    showFriend: ( friend ) ->
+            page.trigger 'pageUpdate'
+            return
 
-        friendView = new window.app.FriendView { model: friend }
-        @$friendList.append friendView.render().el
-        return
+        alphaSort: ( e ) ->
 
-    getData: ( callback ) ->
+            e.preventDefault()
+            thisSortButton = $ e.currentTarget
 
-        if !$.trim @$friendList.html()
+            return if thisSortButton.hasClass 'active'
+            $( '.alpha-sort-button' ).removeClass 'active'
+            thisSortButton.addClass 'active'
 
-            $loadingContainer = $('<div/>', {class: 'loading-container text-center'}).appendTo '#content'
-            $loadingSpinner = $('<i/>', {class: 'icon-cog icon-spin icon-4x text-primary'}).appendTo $loadingContainer
+            asc = if thisSortButton.is '#alpha-sort-az' then true else false
+            page.sorting.sortDirection = if asc is true then 1 else -1
 
-            window.app.friends.fetch
-                success: ( collection, response, options ) ->
-                    window.app.facebook.graph = options.facebookResponse
-                error: ( response ) ->
-                    console.log 'Facebook query error'
-                reset: true
-        return
+            page.reset()
+            page.trigger 'pageUpdate'
+            return
 
-    searchFriends: ( e ) ->
+        updateAuth: ( response ) ->
 
-        e.preventDefault() if e.which == 13
+            if response.status is 'connected'
+                @$authButton.html '<i class="icon-signout"></i> Logout'
+                facebook.isLoggedIn = true
+                facebook.trigger 'isLoggedIn'
+            else 
+                @$authButton.html '<i class="icon-facebook-sign"></i> Sign In with Facebook'
+                facebook.isLoggedIn = false
+            return
 
-        searchText = @$search.val()
-        window.app.filteredCollection = window.app.friends.search searchText
+        auth: ( e ) ->
 
-        window.app.page.reset()
-        window.app.page.trigger 'pageUpdate'
-        return
+            e.preventDefault()
+            if facebook.isLoggedIn is true
+                window.FB.logout ( response ) ->
+                    window.location.reload(true)
+            else
+                window.FB.login null, {scope: 'friends_photos, user_friends, user_photos'}
+            return
 
-    navigate: ( e ) ->
+    window.app            = app
+    window.app.friends    = friends
+    window.app.page       = page
+    window.app.facebook   = facebook
+    window.app.FriendView = FriendView
 
-        e.preventDefault()
-        thisNavButton = $ e.currentTarget
-
-        if thisNavButton.is '#pagination-back-button'
-            window.app.page.info.currentPage--
-        else
-            window.app.page.info.currentPage++
-
-        window.app.page.trigger 'pageUpdate'
-        return
-
-    alphaSort: ( e ) ->
-
-        e.preventDefault()
-        thisSortButton = $ e.currentTarget
-
-        return if thisSortButton.hasClass 'active'
-        $( '.alpha-sort-button' ).removeClass 'active'
-        thisSortButton.addClass 'active'
-
-        asc = if thisSortButton.is '#alpha-sort-az' then true else false
-        window.app.page.sorting.sortDirection = if asc is true then 1 else -1
-
-        window.app.page.reset()
-        window.app.page.trigger 'pageUpdate'
-        return
-
-    updateAuth: ( response ) ->
-
-        if response.status is 'connected'
-            @$authButton.html '<i class="icon-signout"></i> Logout'
-            window.app.facebook.isLoggedIn = true
-            window.app.facebook.trigger 'isLoggedIn'
-        else 
-            @$authButton.html '<i class="icon-facebook-sign"></i> Sign In with Facebook'
-            window.app.facebook.isLoggedIn = false
-        return
-
-    auth: ( e ) ->
-
-        e.preventDefault()
-        if window.app.facebook.isLoggedIn is true
-            window.FB.logout ( response ) ->
-                window.location.reload(true)
-        else
-            window.FB.login null, {scope: 'friends_photos, user_friends, user_photos'}
-        return
+) window.app, window.app.friends, window.app.page, window.app.facebook, window.app.FriendView

@@ -2,168 +2,175 @@
 (function() {
   window.app = window.app || {};
 
-  window.app.AppView = Backbone.View.extend({
-    el: '#content',
-    events: {
-      'click #facebook-auth-button': 'auth',
-      'keyup #search-friends': 'searchFriends',
-      'click .pagination-button': 'navigate',
-      'click .alpha-sort-button': 'alphaSort'
-    },
-    initialize: function() {
-      this.$auth = $('.auth');
-      this.$authButton = $('#facebook-auth-button');
-      this.$friendList = $('#friends-list');
-      this.$filters = $('#filters');
-      this.$search = $('#search-friends');
-      this.$pagination = $('#pagination');
-      this.$paginationInfo = $('#pagination-info');
-      this.$paginationBack = $('#pagination-back-button');
-      this.$paginationForward = $('#pagination-forward-button');
-      this.$sortAZ = $('#alpha-sort-az');
-      this.$sortZA = $('#alpha-sort-za');
-      this.listenTo(window.app.facebook, 'facebookStatusChange', this.updateAuth);
-      this.listenTo(window.app.facebook, 'isLoggedIn', this.getData);
-      this.listenTo(window.app.page, 'pageUpdate', this.render);
-      return this.listenTo(window.app.friends, 'reset', this.render);
-    },
-    render: function(collection) {
-      var paginated;
-      if ((window.app.friends != null) && window.app.friends.length) {
-        if (!$('.user-profile-picture').length && window.app.facebook.graph) {
-          $('<img/>', {
-            "class": 'user-profile-picture img-rounded',
-            src: window.app.facebook.graph.picture.data.url,
-            width: '40',
-            height: '40'
-          }).appendTo(this.$auth);
-        }
-        if ($('.loading-container').length) {
-          $('.loading-container').remove();
-        }
-        this.$filters.show();
-        if (collection) {
-          collection = collection;
-        }
-        if ((window.app.filteredCollection != null) && window.app.filteredCollection.length !== window.app.friends.length) {
-          collection = window.app.filteredCollection;
+  (function(app, friends, page, facebook, FriendView) {
+    app.AppView = Backbone.View.extend({
+      el: '#content',
+      events: {
+        'click #facebook-auth-button': 'auth',
+        'keyup #search-friends': 'searchFriends',
+        'click .pagination-button': 'navigate',
+        'click .alpha-sort-button': 'alphaSort'
+      },
+      initialize: function() {
+        this.$auth = $('.auth');
+        this.$authButton = $('#facebook-auth-button');
+        this.$friendList = $('#friends-list');
+        this.$filters = $('#filters');
+        this.$search = $('#search-friends');
+        this.$pagination = $('#pagination');
+        this.$paginationInfo = $('#pagination-info');
+        this.$paginationBack = $('#pagination-back-button');
+        this.$paginationForward = $('#pagination-forward-button');
+        this.$sortAZ = $('#alpha-sort-az');
+        this.$sortZA = $('#alpha-sort-za');
+        this.listenTo(facebook, 'facebookStatusChange', this.updateAuth);
+        this.listenTo(facebook, 'isLoggedIn', this.getData);
+        this.listenTo(page, 'pageUpdate', this.render);
+        return this.listenTo(friends, 'reset', this.render);
+      },
+      render: function(collection) {
+        var paginated;
+        if ((friends != null) && friends.length) {
+          if (!$('.user-profile-picture').length && facebook.graph) {
+            $('<img/>', {
+              "class": 'user-profile-picture img-rounded',
+              src: facebook.graph.picture.data.url,
+              width: '40',
+              height: '40'
+            }).appendTo(this.$auth);
+          }
+          if ($('.loading-container').length) {
+            $('.loading-container').remove();
+          }
+          this.$filters.show();
+          if (collection) {
+            collection = collection;
+          }
+          if ((app.filteredCollection != null) && app.filteredCollection.length !== friends.length) {
+            collection = app.filteredCollection;
+          } else {
+            collection = friends;
+          }
+          page.updatePageInfo(collection);
+          collection.sortDirection = page.sorting.sortDirection;
+          collection.sortFriends(page.sorting.sortAttribute);
+          paginated = collection.slice(page.info.start, page.info.finish);
+          this.$paginationInfo.html(page.info.currentPage + ' / ' + page.info.totalPages);
+          if (page.info.currentPage < 2) {
+            this.$paginationBack.addClass('disabled');
+          } else if (this.$paginationBack.hasClass('disabled')) {
+            this.$paginationBack.removeClass('disabled');
+          }
+          if (page.info.currentPage === page.info.totalPages) {
+            this.$paginationForward.addClass('disabled');
+          } else if (this.$paginationForward.hasClass('disabled')) {
+            this.$paginationForward.removeClass('disabled');
+          }
+          this.$friendList.empty();
+          if (paginated.length) {
+            _.each(paginated, this.showFriend, this);
+          } else {
+            $('<a/>', {
+              "class": 'list-group-item text-center',
+              html: '<span><i class="icon-frown"></i> No Matches</span>'
+            }).appendTo(this.$friendList);
+          }
         } else {
-          collection = window.app.friends;
+          $('.user-profile-picture').remove();
+          this.$friendList.empty();
+          this.$filters.hide();
         }
-        window.app.page.updatePageInfo(collection);
-        collection.sortDirection = window.app.page.sorting.sortDirection;
-        collection.sortFriends(window.app.page.sorting.sortAttribute);
-        paginated = collection.slice(window.app.page.info.start, window.app.page.info.finish);
-        this.$paginationInfo.html(window.app.page.info.currentPage + ' / ' + window.app.page.info.totalPages);
-        if (window.app.page.info.currentPage < 2) {
-          this.$paginationBack.addClass('disabled');
-        } else if (this.$paginationBack.hasClass('disabled')) {
-          this.$paginationBack.removeClass('disabled');
-        }
-        if (window.app.page.info.currentPage === window.app.page.info.totalPages) {
-          this.$paginationForward.addClass('disabled');
-        } else if (this.$paginationForward.hasClass('disabled')) {
-          this.$paginationForward.removeClass('disabled');
-        }
-        this.$friendList.empty();
-        if (paginated.length) {
-          _.each(paginated, this.showFriend, this);
-        } else {
-          $('<a/>', {
-            "class": 'list-group-item text-center',
-            html: '<span><i class="icon-frown"></i> No Matches</span>'
-          }).appendTo(this.$friendList);
-        }
-      } else {
-        $('.user-profile-picture').remove();
-        this.$friendList.empty();
-        this.$filters.hide();
-      }
-    },
-    showFriend: function(friend) {
-      var friendView;
-      friendView = new window.app.FriendView({
-        model: friend
-      });
-      this.$friendList.append(friendView.render().el);
-    },
-    getData: function(callback) {
-      var $loadingContainer, $loadingSpinner;
-      if (!$.trim(this.$friendList.html())) {
-        $loadingContainer = $('<div/>', {
-          "class": 'loading-container text-center'
-        }).appendTo('#content');
-        $loadingSpinner = $('<i/>', {
-          "class": 'icon-cog icon-spin icon-4x text-primary'
-        }).appendTo($loadingContainer);
-        window.app.friends.fetch({
-          success: function(collection, response, options) {
-            return window.app.facebook.graph = options.facebookResponse;
-          },
-          error: function(response) {
-            return console.log('Facebook query error');
-          },
-          reset: true
+      },
+      showFriend: function(friend) {
+        var friendView;
+        friendView = new FriendView({
+          model: friend
         });
-      }
-    },
-    searchFriends: function(e) {
-      var searchText;
-      if (e.which === 13) {
+        this.$friendList.append(friendView.render().el);
+      },
+      getData: function(callback) {
+        var $loadingContainer, $loadingSpinner;
+        if (!$.trim(this.$friendList.html())) {
+          $loadingContainer = $('<div/>', {
+            "class": 'loading-container text-center'
+          }).appendTo('#content');
+          $loadingSpinner = $('<i/>', {
+            "class": 'icon-cog icon-spin icon-4x text-primary'
+          }).appendTo($loadingContainer);
+          friends.fetch({
+            success: function(collection, response, options) {
+              return facebook.graph = options.facebookResponse;
+            },
+            error: function(response) {
+              return console.log('Facebook query error');
+            },
+            reset: true
+          });
+        }
+      },
+      searchFriends: function(e) {
+        var searchText;
+        if (e.which === 13) {
+          e.preventDefault();
+        }
+        searchText = this.$search.val();
+        app.filteredCollection = friends.search(searchText);
+        page.reset();
+        page.trigger('pageUpdate');
+      },
+      navigate: function(e) {
+        var thisNavButton;
         e.preventDefault();
+        thisNavButton = $(e.currentTarget);
+        if (thisNavButton.is('#pagination-back-button')) {
+          page.info.currentPage--;
+        } else {
+          page.info.currentPage++;
+        }
+        page.trigger('pageUpdate');
+      },
+      alphaSort: function(e) {
+        var asc, thisSortButton;
+        e.preventDefault();
+        thisSortButton = $(e.currentTarget);
+        if (thisSortButton.hasClass('active')) {
+          return;
+        }
+        $('.alpha-sort-button').removeClass('active');
+        thisSortButton.addClass('active');
+        asc = thisSortButton.is('#alpha-sort-az') ? true : false;
+        page.sorting.sortDirection = asc === true ? 1 : -1;
+        page.reset();
+        page.trigger('pageUpdate');
+      },
+      updateAuth: function(response) {
+        if (response.status === 'connected') {
+          this.$authButton.html('<i class="icon-signout"></i> Logout');
+          facebook.isLoggedIn = true;
+          facebook.trigger('isLoggedIn');
+        } else {
+          this.$authButton.html('<i class="icon-facebook-sign"></i> Sign In with Facebook');
+          facebook.isLoggedIn = false;
+        }
+      },
+      auth: function(e) {
+        e.preventDefault();
+        if (facebook.isLoggedIn === true) {
+          window.FB.logout(function(response) {
+            return window.location.reload(true);
+          });
+        } else {
+          window.FB.login(null, {
+            scope: 'friends_photos, user_friends, user_photos'
+          });
+        }
       }
-      searchText = this.$search.val();
-      window.app.filteredCollection = window.app.friends.search(searchText);
-      window.app.page.reset();
-      window.app.page.trigger('pageUpdate');
-    },
-    navigate: function(e) {
-      var thisNavButton;
-      e.preventDefault();
-      thisNavButton = $(e.currentTarget);
-      if (thisNavButton.is('#pagination-back-button')) {
-        window.app.page.info.currentPage--;
-      } else {
-        window.app.page.info.currentPage++;
-      }
-      window.app.page.trigger('pageUpdate');
-    },
-    alphaSort: function(e) {
-      var asc, thisSortButton;
-      e.preventDefault();
-      thisSortButton = $(e.currentTarget);
-      if (thisSortButton.hasClass('active')) {
-        return;
-      }
-      $('.alpha-sort-button').removeClass('active');
-      thisSortButton.addClass('active');
-      asc = thisSortButton.is('#alpha-sort-az') ? true : false;
-      window.app.page.sorting.sortDirection = asc === true ? 1 : -1;
-      window.app.page.reset();
-      window.app.page.trigger('pageUpdate');
-    },
-    updateAuth: function(response) {
-      if (response.status === 'connected') {
-        this.$authButton.html('<i class="icon-signout"></i> Logout');
-        window.app.facebook.isLoggedIn = true;
-        window.app.facebook.trigger('isLoggedIn');
-      } else {
-        this.$authButton.html('<i class="icon-facebook-sign"></i> Sign In with Facebook');
-        window.app.facebook.isLoggedIn = false;
-      }
-    },
-    auth: function(e) {
-      e.preventDefault();
-      if (window.app.facebook.isLoggedIn === true) {
-        window.FB.logout(function(response) {
-          return window.location.reload(true);
-        });
-      } else {
-        window.FB.login(null, {
-          scope: 'friends_photos, user_friends, user_photos'
-        });
-      }
-    }
-  });
+    });
+    window.app = app;
+    window.app.friends = friends;
+    window.app.page = page;
+    window.app.facebook = facebook;
+    return window.app.FriendView = FriendView;
+  })(window.app, window.app.friends, window.app.page, window.app.facebook, window.app.FriendView);
 
 }).call(this);

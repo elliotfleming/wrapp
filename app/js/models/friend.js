@@ -2,8 +2,6 @@
 (function() {
   window.app = window.app || {};
 
-  window.app.Friend = Backbone.Model.extend({
-    initialize: function() {}
-  });
+  window.app.Friend = Backbone.Model;
 
 }).call(this);

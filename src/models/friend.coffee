@@ -2,7 +2,4 @@
 
 window.app = window.app || {}
 
-window.app.Friend = Backbone.Model.extend
-    initialize: ->
-        #console.log this
-        return
+window.app.Friend = Backbone.Model
