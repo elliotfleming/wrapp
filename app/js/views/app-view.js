@@ -15,6 +15,7 @@
     initialize: function() {
       this.$authContainer = $('.auth');
       this.$authButton = $('.facebook-auth-button');
+      this.$friendsContainer = $('.friends-container');
       this.$friendList = $('.friends-list');
       this.$filterContainer = $('.filters');
       this.$search = $('#search-friends');
@@ -40,6 +41,7 @@
     },
     resetFriendList: function() {
       var collection, paginated;
+      $('.loading-container').remove();
       this.$filterContainer.show();
       if ((window.app.filteredCollection != null) && window.app.filteredCollection.models.length !== window.app.friends.models.length) {
         window.app.page.updatePageInfo(window.app.filteredCollection);
@@ -126,8 +128,15 @@
       window.app.page.trigger('pageUpdate');
     },
     updateAuth: function(response) {
+      var $loadingContainer, $loadingSpinner;
       if (response.status === 'connected') {
         this.$authButton.html('<i class="icon-signout"></i> Logout');
+        $loadingContainer = $('<div/>', {
+          "class": 'loading-container text-center'
+        }).appendTo('#content');
+        $loadingSpinner = $('<i/>', {
+          "class": 'icon-cog icon-spin icon-4x text-primary'
+        }).appendTo($loadingContainer);
         window.app.facebook.isLoggedIn = true;
         window.app.facebook.trigger('isLoggedIn');
       } else {

@@ -17,6 +17,9 @@ Create a web application that meets the following criteria:
 *   Provide sorting options for the friend list
 
 ## Additional Resources Used
+*   [Backbone.js](https://github.com/jashkenas/backbone)
+*   [Underscore.js](https://github.com/jashkenas/underscore)
+*   [Bower](https://github.com/bower/bower)
 *   [jQuery](https://github.com/jquery/jquery)
 *   [Twitter Bootstrap v3](https://github.com/twbs/bootstrap)
 *   [Font Awesome](https://github.com/FortAwesome/Font-Awesome)

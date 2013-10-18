@@ -18,6 +18,7 @@ window.app.AppView = Backbone.View.extend
 
         @$authContainer       = $ '.auth'
         @$authButton          = $ '.facebook-auth-button'
+        @$friendsContainer    = $ '.friends-container'
         @$friendList          = $ '.friends-list'
         @$filterContainer     = $ '.filters'
         @$search              = $ '#search-friends'
@@ -35,7 +36,7 @@ window.app.AppView = Backbone.View.extend
         @listenTo window.app.friends,  'all',                  @render
 
     render: ( event ) ->
-        # Nothing to render yet
+        # Nothing here yet
         return
     
     showFriend: ( friend ) ->
@@ -46,6 +47,7 @@ window.app.AppView = Backbone.View.extend
 
     resetFriendList: ->
 
+        $('.loading-container').remove()
         @$filterContainer.show()
 
         if window.app.filteredCollection? and window.app.filteredCollection.models.length isnt window.app.friends.models.length
@@ -143,6 +145,8 @@ window.app.AppView = Backbone.View.extend
 
         if response.status is 'connected'
             @$authButton.html '<i class="icon-signout"></i> Logout'
+            $loadingContainer = $('<div/>', {class: 'loading-container text-center'}).appendTo '#content'
+            $loadingSpinner = $('<i/>', {class: 'icon-cog icon-spin icon-4x text-primary'}).appendTo $loadingContainer
             window.app.facebook.isLoggedIn = true
             window.app.facebook.trigger 'isLoggedIn'
         else 
