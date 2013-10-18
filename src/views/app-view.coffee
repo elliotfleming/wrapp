@@ -7,12 +7,10 @@ window.app.AppView = Backbone.View.extend
     el: '#content'
 
     events:
-        'click .facebook-auth-button': 'auth'
-        'click #pagination-back-button': 'pageBack'
-        'click #pagination-forward-button': 'pageForward'
-        'click #alpha-sort-az': 'sortAZ'
-        'click #alpha-sort-za': 'sortZA'
-        'keyup #search-friends': 'searchFriends'
+        'click .facebook-auth-button' : 'auth'
+        'keyup #search-friends'       : 'searchFriends'
+        'click .pagination-button'    : 'navigate'
+        'click .alpha-sort-button'    : 'alphaSort'
 
     initialize: ->
 
@@ -117,40 +115,32 @@ window.app.AppView = Backbone.View.extend
         window.app.page.trigger 'pageUpdate', window.app.filteredCollection
         return
 
-    sortAZ: ( e ) ->
+    alphaSort: ( e ) ->
 
         e.preventDefault()
-        return if @$sortAZ.hasClass 'active'
-        window.app.page.sorting.sortDirection = 1
-        @$sortZA.removeClass 'active'
-        @$sortAZ.addClass 'active'
+        thisSortButton = $ e.currentTarget
+
+        return if thisSortButton.hasClass 'active'
+        $( '.alpha-sort-button' ).removeClass 'active'
+        thisSortButton.addClass 'active'
+
+        asc = if thisSortButton.is '#alpha-sort-az' then true else false
+        window.app.page.sorting.sortDirection = if asc is true then 1 else -1
+
         window.app.page.reset()
         window.app.page.trigger 'pageUpdate'
         return
 
-    sortZA: ( e ) ->
+    navigate: ( e ) ->
 
         e.preventDefault()
-        return if @$sortZA.hasClass 'active'
-        window.app.page.sorting.sortDirection = -1
-        @$sortAZ.removeClass 'active'
-        @$sortZA.addClass 'active'
-        window.app.page.reset()
-        window.app.page.trigger 'pageUpdate'
-        return
+        thisNavButton = $ e.currentTarget
 
+        if thisNavButton.is '#pagination-back-button'
+            window.app.page.info.currentPage--
+        else
+            window.app.page.info.currentPage++
 
-    pageBack: ( e ) ->
-
-        e.preventDefault()
-        window.app.page.info.currentPage--
-        window.app.page.trigger 'pageUpdate'
-        return
-
-    pageForward: ( e ) ->
-
-        e.preventDefault()
-        window.app.page.info.currentPage++
         window.app.page.trigger 'pageUpdate'
         return
 

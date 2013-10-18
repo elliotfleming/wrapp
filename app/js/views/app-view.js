@@ -6,11 +6,9 @@
     el: '#content',
     events: {
       'click .facebook-auth-button': 'auth',
-      'click #pagination-back-button': 'pageBack',
-      'click #pagination-forward-button': 'pageForward',
-      'click #alpha-sort-az': 'sortAZ',
-      'click #alpha-sort-za': 'sortZA',
-      'keyup #search-friends': 'searchFriends'
+      'keyup #search-friends': 'searchFriends',
+      'click .pagination-button': 'navigate',
+      'click .alpha-sort-button': 'alphaSort'
     },
     initialize: function() {
       this.$authContainer = $('.auth');
@@ -118,36 +116,29 @@
       window.app.page.reset();
       window.app.page.trigger('pageUpdate', window.app.filteredCollection);
     },
-    sortAZ: function(e) {
+    alphaSort: function(e) {
+      var asc, thisSortButton;
       e.preventDefault();
-      if (this.$sortAZ.hasClass('active')) {
+      thisSortButton = $(e.currentTarget);
+      if (thisSortButton.hasClass('active')) {
         return;
       }
-      window.app.page.sorting.sortDirection = 1;
-      this.$sortZA.removeClass('active');
-      this.$sortAZ.addClass('active');
+      $('.alpha-sort-button').removeClass('active');
+      thisSortButton.addClass('active');
+      asc = thisSortButton.is('#alpha-sort-az') ? true : false;
+      window.app.page.sorting.sortDirection = asc === true ? 1 : -1;
       window.app.page.reset();
       window.app.page.trigger('pageUpdate');
     },
-    sortZA: function(e) {
+    navigate: function(e) {
+      var thisNavButton;
       e.preventDefault();
-      if (this.$sortZA.hasClass('active')) {
-        return;
+      thisNavButton = $(e.currentTarget);
+      if (thisNavButton.is('#pagination-back-button')) {
+        window.app.page.info.currentPage--;
+      } else {
+        window.app.page.info.currentPage++;
       }
-      window.app.page.sorting.sortDirection = -1;
-      this.$sortAZ.removeClass('active');
-      this.$sortZA.addClass('active');
-      window.app.page.reset();
-      window.app.page.trigger('pageUpdate');
-    },
-    pageBack: function(e) {
-      e.preventDefault();
-      window.app.page.info.currentPage--;
-      window.app.page.trigger('pageUpdate');
-    },
-    pageForward: function(e) {
-      e.preventDefault();
-      window.app.page.info.currentPage++;
       window.app.page.trigger('pageUpdate');
     },
     updateAuth: function(response) {
