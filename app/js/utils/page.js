@@ -9,7 +9,6 @@
       sortDirection: 1
     },
     page_defaults: {
-      page: 1,
       currentPage: 1,
       perPage: 10
     },
@@ -21,13 +20,13 @@
     },
     updatePageInfo: function(collection) {
       var currentPage, finish, perPage, start, totalFriends, totalPages;
+      perPage = this.info != null ? this.info.perPage : this.page_defaults.perPage;
       totalFriends = collection.models.length;
-      totalPages = Math.ceil(totalFriends / this.page_defaults.perPage);
+      totalPages = Math.ceil(totalFriends / perPage);
       currentPage = this.info != null ? this.info.currentPage : this.page_defaults.currentPage;
       currentPage = totalFriends ? currentPage : 0;
-      perPage = this.page_defaults.perPage;
-      start = currentPage * 10 !== 10 ? (currentPage - 1) * 10 : 0;
-      finish = currentPage * 10;
+      start = currentPage * perPage !== perPage ? (currentPage - 1) * perPage : 0;
+      finish = currentPage * perPage;
       return this.info = {
         totalFriends: totalFriends,
         totalPages: totalPages,

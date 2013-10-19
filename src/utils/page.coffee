@@ -11,7 +11,6 @@ window.app.page =
         sortDirection: 1
 
     page_defaults:
-        page: 1
         currentPage: 1
         perPage: 10
 
@@ -21,13 +20,13 @@ window.app.page =
 
     updatePageInfo: ( collection ) ->
 
+        perPage      = if @info? then @info.perPage else @page_defaults.perPage
         totalFriends = collection.models.length
-        totalPages   = Math.ceil totalFriends / @page_defaults.perPage
+        totalPages   = Math.ceil totalFriends / perPage
         currentPage  = if @info? then @info.currentPage else @page_defaults.currentPage
         currentPage  = if totalFriends then currentPage else 0
-        perPage      = @page_defaults.perPage
-        start        = if currentPage * 10 isnt 10 then ( currentPage - 1 ) * 10 else 0
-        finish       = currentPage * 10
+        start        = if currentPage * perPage isnt perPage then ( currentPage - 1 ) * perPage else 0
+        finish       = currentPage * perPage
 
         @info =
             totalFriends : totalFriends
