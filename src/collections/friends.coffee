@@ -12,6 +12,7 @@ window.app.Friends = Backbone.Collection.extend
     sortDirection: 1
 
     comparator: ( a, b ) ->
+        
         a = a.get @sortAttribute
         b = b.get @sortAttribute
 
@@ -25,11 +26,14 @@ window.app.Friends = Backbone.Collection.extend
     sync: ( method, model, options) ->
         
         window.FB.api model.url, ( response ) ->
+
             if not response or response.error
                 options.error response
                 return
+
             console.log '___FACEBOOK GRAPH DATA___'
             console.log response
+
             options.facebookResponse = response
             options.success response.friends.data, response, options
             return
@@ -42,8 +46,10 @@ window.app.Friends = Backbone.Collection.extend
     search: ( searchText ) ->
 
         pattern = new RegExp( searchText, 'i' )
+
         filtered = @filter ( friend ) ->
             pattern.test friend.get('name')
+
         new window.app.Friends filtered
 
 window.app.friends = new window.app.Friends()

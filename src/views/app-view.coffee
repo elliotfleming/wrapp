@@ -18,12 +18,12 @@ window.app = window.app || {}
 
         initialize: ->
 
-            @$auth              = $ '.auth'
-            @$authButton        = $ '#facebook-auth-button'
-            @$friendList        = $ '#friends-list'
-            @$filters           = $ '#filters'
-            @$sorting           = $ '#sorting'
-            @$search            = $ '#search-friends'
+            @$auth       = $ '.auth'
+            @$authButton = $ '#facebook-auth-button'
+            @$friendList = $ '#friends-list'
+            @$filters    = $ '#filters'
+            @$sorting    = $ '#sorting'
+            @$search     = $ '#search-friends'
 
             @listenTo facebook, 'facebookStatusChange', @updateAuth
             @listenTo facebook, 'isLoggedIn',           @getData

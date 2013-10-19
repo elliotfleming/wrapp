@@ -6,9 +6,6 @@
     tagName: 'a',
     className: 'list-group-item',
     template: _.template($('#friend-template').html()),
-    initialize: function() {
-      this.$friendContainer = $('.friends-container');
-    },
     render: function() {
       this.$el.html(this.template(this.model.toJSON()));
       return this;

@@ -14,20 +14,25 @@
       perPage: 10
     },
     reset: function() {
+      if (this.info == null) {
+        return;
+      }
       return this.info.currentPage = 1;
     },
     updatePageInfo: function(collection) {
-      var currentPage, finish, start, totalFriends, totalPages;
+      var currentPage, finish, perPage, start, totalFriends, totalPages;
       totalFriends = collection.models.length;
       totalPages = Math.ceil(totalFriends / this.page_defaults.perPage);
       currentPage = this.info != null ? this.info.currentPage : this.page_defaults.currentPage;
       currentPage = totalFriends ? currentPage : 0;
+      perPage = this.page_defaults.perPage;
       start = currentPage * 10 !== 10 ? (currentPage - 1) * 10 : 0;
       finish = currentPage * 10;
       return this.info = {
         totalFriends: totalFriends,
         totalPages: totalPages,
         currentPage: currentPage,
+        perPage: perPage,
         start: start,
         finish: finish
       };
