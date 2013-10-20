@@ -13,12 +13,12 @@
         'click .alpha-sort-button': 'alphaSort'
       },
       initialize: function() {
-        this.$auth = $('.auth');
-        this.$authButton = $('#facebook-auth-button');
-        this.$friendList = $('#friends-list');
-        this.$filters = $('#filters');
-        this.$sorting = $('#sorting');
-        this.$search = $('#search-friends');
+        this.$auth = this.$('.auth');
+        this.$authButton = this.$('#facebook-auth-button');
+        this.$friendList = this.$('#friends-list');
+        this.$filters = this.$('#filters');
+        this.$sorting = this.$('#sorting');
+        this.$search = this.$('#search-friends');
         this.listenTo(facebook, 'facebookStatusChange', this.updateAuth);
         this.listenTo(facebook, 'isLoggedIn', this.getData);
         this.listenTo(page, 'pageUpdate', this.render);
@@ -27,7 +27,7 @@
       render: function(collection) {
         var paginated;
         if ((friends != null) && friends.length) {
-          if (!$('.user-profile-picture').length && facebook.graph) {
+          if (!this.$('.user-profile-picture').length && facebook.graph) {
             $('<img/>', {
               "class": 'user-profile-picture img-rounded',
               src: facebook.graph.picture.data.url,
@@ -35,8 +35,8 @@
               height: '40'
             }).appendTo(this.$auth);
           }
-          if ($('.loading-container').length) {
-            $('.loading-container').remove();
+          if (this.$('.loading-container').length) {
+            this.$('.loading-container').remove();
           }
           if (collection) {
             collection = collection;
@@ -55,21 +55,25 @@
             currentPage: page.info.currentPage,
             totalPages: page.info.totalPages
           }));
-          $('.alpha-sort-button').removeClass('active');
+          this.$sortAZ = this.$('#alpha-sort-az');
+          this.$sortZA = this.$('#alpha-sort-za');
+          this.$backButton = this.$('#pagination-back-button');
+          this.$forwardButton = this.$('#pagination-forward-button');
+          this.$('.alpha-sort-button').removeClass('active');
           if (page.sorting.sortDirection === 1) {
-            $('#alpha-sort-az').addClass('active');
+            this.$sortAZ.addClass('active');
           } else {
-            $('#alpha-sort-za').addClass('active');
+            this.$sortZA.addClass('active');
           }
           if (page.info.currentPage < 2) {
-            $('#pagination-back-button').addClass('disabled');
-          } else if ($('#pagination-back-button').hasClass('disabled')) {
-            $('#pagination-back-button').removeClass('disabled');
+            this.$backButton.addClass('disabled');
+          } else if (this.$backButton.hasClass('disabled')) {
+            this.$backButton.removeClass('disabled');
           }
           if (page.info.currentPage === page.info.totalPages) {
-            $('#pagination-forward-button').addClass('disabled');
-          } else if ($('#pagination-forward-button').hasClass('disabled')) {
-            $('#pagination-forward-button').removeClass('disabled');
+            this.$forwardButton.addClass('disabled');
+          } else if (this.$forwardButton.hasClass('disabled')) {
+            this.$forwardButton.removeClass('disabled');
           }
           this.$friendList.empty();
           if (paginated.length) {
@@ -81,10 +85,11 @@
             }).appendTo(this.$friendList);
           }
         } else {
-          $('.user-profile-picture').remove();
+          this.$('.user-profile-picture').remove();
           this.$friendList.empty();
           this.$filters.hide();
         }
+        return this;
       },
       showFriend: function(friend) {
         var friendView;
@@ -118,7 +123,7 @@
         if (e.which === 13) {
           e.preventDefault();
         }
-        searchText = $('#search-friends').val();
+        searchText = this.$('#search-friends').val();
         app.filteredCollection = friends.search(searchText);
         page.searchText = searchText;
         page.reset();

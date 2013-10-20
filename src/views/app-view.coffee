@@ -18,12 +18,12 @@ window.app = window.app || {}
 
         initialize: ->
 
-            @$auth       = $ '.auth'
-            @$authButton = $ '#facebook-auth-button'
-            @$friendList = $ '#friends-list'
-            @$filters    = $ '#filters'
-            @$sorting    = $ '#sorting'
-            @$search     = $ '#search-friends'
+            @$auth       = @$ '.auth'
+            @$authButton = @$ '#facebook-auth-button'
+            @$friendList = @$ '#friends-list'
+            @$filters    = @$ '#filters'
+            @$sorting    = @$ '#sorting'
+            @$search     = @$ '#search-friends'
 
             @listenTo facebook, 'facebookStatusChange', @updateAuth
             @listenTo facebook, 'isLoggedIn',           @getData
@@ -34,10 +34,10 @@ window.app = window.app || {}
 
             if friends? and friends.length
 
-                if not $('.user-profile-picture').length and facebook.graph
+                if not @$('.user-profile-picture').length and facebook.graph
                     $('<img/>', {class: 'user-profile-picture img-rounded', src: facebook.graph.picture.data.url, width: '40', height: '40'}).appendTo @$auth
                 
-                $('.loading-container').remove() if $('.loading-container').length
+                @$('.loading-container').remove() if @$('.loading-container').length
 
                 if collection
                     collection = collection
@@ -57,20 +57,25 @@ window.app = window.app || {}
                     currentPage: page.info.currentPage
                     totalPages: page.info.totalPages
 
-                $('.alpha-sort-button').removeClass 'active'
+                @$sortAZ        = @$ '#alpha-sort-az'
+                @$sortZA        = @$ '#alpha-sort-za'
+                @$backButton    = @$ '#pagination-back-button'
+                @$forwardButton = @$ '#pagination-forward-button'
+
+                @$('.alpha-sort-button').removeClass 'active'
                 if page.sorting.sortDirection is 1
-                    $( '#alpha-sort-az' ).addClass 'active'
+                    @$sortAZ.addClass 'active'
                 else
-                    $( '#alpha-sort-za' ).addClass 'active'
+                    @$sortZA.addClass 'active'
 
                 if page.info.currentPage < 2
-                    $( '#pagination-back-button' ).addClass 'disabled'
-                else if $( '#pagination-back-button' ).hasClass 'disabled'
-                    $( '#pagination-back-button' ).removeClass 'disabled'
+                    @$backButton.addClass 'disabled'
+                else if @$backButton.hasClass 'disabled'
+                    @$backButton.removeClass 'disabled'
                 if page.info.currentPage is page.info.totalPages
-                     $( '#pagination-forward-button' ).addClass 'disabled'
-                else if  $( '#pagination-forward-button' ).hasClass 'disabled'
-                     $( '#pagination-forward-button' ).removeClass 'disabled'
+                     @$forwardButton.addClass 'disabled'
+                else if  @$forwardButton.hasClass 'disabled'
+                     @$forwardButton.removeClass 'disabled'
 
                 @$friendList.empty()
                 if paginated.length
@@ -79,10 +84,11 @@ window.app = window.app || {}
                     $('<a/>', {class: 'list-group-item text-center', html: '<span><i class="icon-frown"></i> No Matches</span>'}).appendTo @$friendList
 
             else
-                $('.user-profile-picture').remove()
+                @$('.user-profile-picture').remove()
                 @$friendList.empty()
                 @$filters.hide()
-            return
+
+            return @
         
         showFriend: ( friend ) ->
 
@@ -109,7 +115,7 @@ window.app = window.app || {}
 
             e.preventDefault() if e.which == 13
 
-            searchText = $('#search-friends').val()
+            searchText = @$('#search-friends').val()
             app.filteredCollection = friends.search searchText
             page.searchText = searchText
 

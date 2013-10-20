@@ -12,7 +12,7 @@ window.app.Friends = Backbone.Collection.extend
     sortDirection: 1
 
     comparator: ( a, b ) ->
-        
+
         a = a.get @sortAttribute
         b = b.get @sortAttribute
 
@@ -22,6 +22,20 @@ window.app.Friends = Backbone.Collection.extend
             return if a > b then 1 else -1
         else
             return if a < b then 1 else -1
+
+    sortFriends: ( attribute ) ->
+
+        @sortAttribute = attribute
+        @sort()
+
+    search: ( searchText ) ->
+
+        pattern = new RegExp( searchText, 'i' )
+
+        filtered = @filter ( friend ) ->
+            pattern.test friend.get('name')
+
+        new window.app.Friends filtered
 
     sync: ( method, model, options) ->
         
@@ -37,19 +51,5 @@ window.app.Friends = Backbone.Collection.extend
             options.facebookResponse = response
             options.success response.friends.data, response, options
             return
-
-    sortFriends: ( attribute ) ->
-
-        @sortAttribute = attribute
-        @sort()
-
-    search: ( searchText ) ->
-
-        pattern = new RegExp( searchText, 'i' )
-
-        filtered = @filter ( friend ) ->
-            pattern.test friend.get('name')
-
-        new window.app.Friends filtered
 
 window.app.friends = new window.app.Friends()

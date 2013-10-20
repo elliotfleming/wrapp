@@ -27,18 +27,6 @@
         }
       }
     },
-    sync: function(method, model, options) {
-      return window.FB.api(model.url, function(response) {
-        if (!response || response.error) {
-          options.error(response);
-          return;
-        }
-        console.log('___FACEBOOK GRAPH DATA___');
-        console.log(response);
-        options.facebookResponse = response;
-        options.success(response.friends.data, response, options);
-      });
-    },
     sortFriends: function(attribute) {
       this.sortAttribute = attribute;
       return this.sort();
@@ -50,6 +38,18 @@
         return pattern.test(friend.get('name'));
       });
       return new window.app.Friends(filtered);
+    },
+    sync: function(method, model, options) {
+      return window.FB.api(model.url, function(response) {
+        if (!response || response.error) {
+          options.error(response);
+          return;
+        }
+        console.log('___FACEBOOK GRAPH DATA___');
+        console.log(response);
+        options.facebookResponse = response;
+        options.success(response.friends.data, response, options);
+      });
     }
   });
 
