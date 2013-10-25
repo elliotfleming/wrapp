@@ -81,7 +81,7 @@
           } else {
             $('<a/>', {
               "class": 'list-group-item text-center',
-              html: '<span><i class="icon-frown"></i> No Matches</span>'
+              html: '<span><i class="fa fa-frown-o"></i> No Matches</span>'
             }).appendTo(this.$friendList);
           }
         } else {
@@ -105,7 +105,7 @@
             "class": 'loading-container text-center'
           }).appendTo('#content');
           $loadingSpinner = $('<i/>', {
-            "class": 'icon-cog icon-spin icon-4x text-primary'
+            "class": 'fa fa-cog fa-spin fa-4x text-primary'
           }).appendTo($loadingContainer);
           friends.fetch({
             success: function(collection, response, options) {
@@ -154,11 +154,11 @@
       },
       updateAuth: function(response) {
         if (response.status === 'connected') {
-          this.$authButton.html('<i class="icon-signout"></i> Logout');
+          this.$authButton.html('<i class="fa fa-sign-out"></i> Logout');
           facebook.isLoggedIn = true;
           facebook.trigger('isLoggedIn');
         } else {
-          this.$authButton.html('<i class="icon-facebook-sign"></i> Sign In with Facebook');
+          this.$authButton.html('<i class="fa fa-facebook-square"></i> Sign In with Facebook');
           facebook.isLoggedIn = false;
         }
       },

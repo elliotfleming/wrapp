@@ -81,7 +81,7 @@ window.app = window.app || {}
                 if paginated.length
                     _.each paginated, @showFriend, @
                 else
-                    $('<a/>', {class: 'list-group-item text-center', html: '<span><i class="icon-frown"></i> No Matches</span>'}).appendTo @$friendList
+                    $('<a/>', {class: 'list-group-item text-center', html: '<span><i class="fa fa-frown-o"></i> No Matches</span>'}).appendTo @$friendList
 
             else
                 @$('.user-profile-picture').remove()
@@ -101,7 +101,7 @@ window.app = window.app || {}
             if !$.trim @$friendList.html()
 
                 $loadingContainer = $('<div/>', {class: 'loading-container text-center'}).appendTo '#content'
-                $loadingSpinner = $('<i/>', {class: 'icon-cog icon-spin icon-4x text-primary'}).appendTo $loadingContainer
+                $loadingSpinner = $('<i/>', {class: 'fa fa-cog fa-spin fa-4x text-primary'}).appendTo $loadingContainer
 
                 friends.fetch
                     success: ( collection, response, options ) ->
@@ -153,11 +153,11 @@ window.app = window.app || {}
         updateAuth: ( response ) ->
 
             if response.status is 'connected'
-                @$authButton.html '<i class="icon-signout"></i> Logout'
+                @$authButton.html '<i class="fa fa-sign-out"></i> Logout'
                 facebook.isLoggedIn = true
                 facebook.trigger 'isLoggedIn'
             else 
-                @$authButton.html '<i class="icon-facebook-sign"></i> Sign In with Facebook'
+                @$authButton.html '<i class="fa fa-facebook-square"></i> Sign In with Facebook'
                 facebook.isLoggedIn = false
             return
 
